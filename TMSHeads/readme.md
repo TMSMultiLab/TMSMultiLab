@@ -1,6 +1,11 @@
 The data in this folder were collected starting in 2011 in the HandLab. For each participant in a TMS study, we measure the head from nasion to inion and between the pre-auricular points.
+
 More recently we also measure the head circumference (nasion - pre-auricular point - inion), and we are also starting to systematically measure participant height, weight, and arm length.
-These biometric data are likely useful in a) training researchers to measure heads; b) finding typical locations on the scalp; c) correlating MEP parameters such as amplitude and latency with height and arm length.
+
+These biometric data are likely useful in
+* training researchers to measure heads
+* finding typical locations on the scalp
+* correlating MEP parameters such as amplitude and latency with height and arm length
 
 Files:
 1) <b>HandLab_TMSHeads.csv</b>  - the data, in comma-separated values:
