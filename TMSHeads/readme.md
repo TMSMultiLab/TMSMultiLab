@@ -30,4 +30,4 @@ Files:
 
 2) <b>HandLab_TMSHeads.m</b> - Matlab script (will also work with minor changes using Octave (https://octave.org/) to load and parse the data and produce the graphs shown on the Head measurement page (https://github.com/TMSMultiLab/TMSMultiLab/wiki/Head-measurement)
 
-3) <b>HandLab_TMSSites.m</b> - Matlab script to plot the locations of muscles targeted onto a map of the scalp, centred on the vertex, Cz.
+3) <b>HandLab_TMSSites.m</b> - Matlab script to plot the locations of muscles targeted onto a map of the scalp, centred on the vertex, Cz, as shown on the [primary motor cortex](https://github.com/TMSMultiLab/TMSMultiLab/wiki/Primary-motor-cortex) page.
