@@ -78,3 +78,11 @@ subplot(2,3,6);
 xlabel('Correlation, log(p)');
 print('discrete_continuous.png','-dpng');
 close(1);
+
+% print confidence intervals for r, r^2, t, log p, and p
+for s=1:6
+    for m=1:2
+        H=sortrows(summary(:,s,m));
+	disp(['s',int2str(s),', m',int2str(m),': ',num2str(H(5000),3),' {',num2str(H(250),3),',',num2str(H(9750),3),'}']);
+    end
+end
