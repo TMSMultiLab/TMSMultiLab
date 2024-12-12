@@ -1,7 +1,9 @@
 # TMS Multi-Lab
 A place to share resources, data and code for running a transcranial magnetic stimulation (TMS) research laboratory.
 
+## GitHub tutorial
 
+https://docs.github.com/en/get-started/start-your-journey/hello-world
 
 ## Cloning the repository to your local machine
 
