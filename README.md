@@ -11,7 +11,9 @@ A place to share resources, data and code for running a transcranial magnetic st
 4. type <code>git clone  https://github.com/TMSMultiLab/TMSMultiLab</code>
 5. it is done - you now have all the code in <code>MyFiles/TMSMultiLab</code>
 
-If you edit these files on your local machine, you will then need to push them up to the main repository.
+If you edit these files on your local machine, you will then need to <code>stage</code>, <code>commit</code>, and <code>push</code> them up to the main repository.
+
+If the main repository files change, you will need to <code>fetch</code> or <code>pull</code> the updates before working on them.
 
 ## Cloning the wiki to your local machine
 see 1-3 above, then:
@@ -19,4 +21,6 @@ see 1-3 above, then:
 4. type <code>git clone https://github.com/TMSMultiLab/TMSMultiLab.wiki.git</code>
 5. it is done - you now have all the wiki in <code>MyFiles/TMSMultiLab.wiki</code>
 
-If you edit these files on your local machine, you will then need to push them up to the main repository.
+If you edit these files on your local machine, you will then need to <code>stage</code>, <code>commit</code>, and <code>push</code> them up to the main repository.
+
+If the main repository files change, you will need to <code>fetch</code> or <code>pull</code> the updates before working on them.
