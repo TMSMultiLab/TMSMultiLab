@@ -25,4 +25,4 @@ see 1-3 above, then:
 
 If you edit these files on your local machine, you will then need to <code>stage</code>, <code>commit</code>, and <code>push</code> them up to the main repository.
 
-If the main repository files change, you will need to <code>fetch</code> or <code>pull</code> the updates before working on them.
+If the wiki files change, you will need to <code>fetch</code> or <code>pull</code> the updates before working on them.
