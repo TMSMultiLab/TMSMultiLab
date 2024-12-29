@@ -83,7 +83,7 @@ for s=UK                                                                    % fo
     geoplot([hubs(1,h),sats(1,s)],[hubs(2,h),sats(2,s)],'b-','LineWidth',2);% plot a line between them
 end
 set(gcf,'Position',[0,0,800,600]);
-print('TMSMultiLab_UK.png','-dpng');
+print('TMSMultiLab_Network_UK.png','-dpng');
 
 % REPEAT, WITHOUT HUB/SAT distinction_______________________________________
 geoaxes;                                                                    % UK
@@ -92,7 +92,7 @@ for s=UK
     geoplot(sats(1,s),sats(2,s),'bo','MarkerSize',sats(3,s).*4,'MarkerFaceColor','b');
 end
 set(gcf,'Position',[0,0,800,600]);
-print('TMSMultiLab_UK2.png','-dpng');
+print('TMSMultiLab_Network_UK2.png','-dpng');
 
 geoaxes;                                                                    % EUROPE
 hold on;
@@ -108,7 +108,7 @@ for s=EU                                                                    % fo
     geoplot([hubs(1,h),sats(1,s)],[hubs(2,h),sats(2,s)],'b-','LineWidth',2);% plot a line between them
 end
 set(gcf,'Position',[0,0,800,600]);
-print('TMSMultiLab_Europe.png','-dpng');
+print('TMSMultiLab_Network_Europe.png','-dpng');
 
 geoaxes;                                                                    % WORLD
 hold on;
@@ -124,5 +124,5 @@ for s=WO                                                                    % fo
     geoplot([hubs(1,h),sats(1,s)],[hubs(2,h),sats(2,s)],'b-','LineWidth',2);% plot a line between them
 end
 set(gcf,'Position',[0,0,800,600]);
-print('TMSMultiLab_World.png','-dpng');
+print('TMSMultiLab_Network_World.png','-dpng');
 close all;
