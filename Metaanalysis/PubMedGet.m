@@ -8,8 +8,7 @@ function record=PubMedGet(pmid)
     else
         % get the web data
         url=['https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=',int2str(pmid),'&retmode=xml'];
-	pause(5); % wait 5 seconds between every query to avoid spamming PMID & getting kicked off the web
-	raw=urlread(url);
-	record=PubMedParse(raw);
+	pause(4+rand*4); % wait ~4-8 seconds between every query to avoid spamming PMID & getting kicked off the web
+	record=urlread(url);
     end
 end

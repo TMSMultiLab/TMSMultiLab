@@ -9,7 +9,14 @@ function record=PubMedParse(raw)
 	start=strfind(raw,'<PMID Version="1">');
 	finish=strfind(raw,'</PMID>');
 	record.PMID=str2num(raw(start+18:finish-1));
-    
+
+	% DOI
+	start=strfind(raw,'<ArticleId IdType="doi">');
+	if ~isempty(start)
+		finish=strfind(raw,'</ArticleId>');
+		record.DOI=raw(start(1)+24:finish(finish>start(1))-1);
+	end
+
 	% Journal string
 	start=strfind(raw,'<Journal>');
 	finish=strfind(raw,'</Journal>');
@@ -32,9 +39,11 @@ function record=PubMedParse(raw)
 		
 		% Issue
 		start=strfind(str,'<Issue>');
-		finish=strfind(str,'</Issue>');
-		record.Issue=str(start+8:finish-1);
-
+		if ~isempty(start)
+			finish=strfind(str,'</Issue>');
+			record.Issue=str(start+7:finish-1);
+		end
+		
 		% PubDate string
 		start=strfind(str,'<PubDate>');
 		finish=strfind(str,'</PubDate>');
@@ -47,13 +56,17 @@ function record=PubMedParse(raw)
 
 			% Month
 			start=strfind(str2,'<Month>');
-			finish=strfind(str2,'</Month>');
-			record.Month=str2(start+7:finish-1);
-
+			if ~isempty(start)
+				finish=strfind(str2,'</Month>');
+				record.Month=str2(start+7:finish-1);
+			end
+			
 			% Day
 			start=strfind(str2,'<Day>');
-			finish=strfind(str2,'</Day>');
-			record.Day=str2num(str2(start+5:finish-1));
+			if ~isempty(start)
+				finish=strfind(str2,'</Day>');
+				record.Day=str2num(str2(start+5:finish-1));
+			end
 
 	% TITLE
 	start=strfind(raw,'<ArticleTitle>');
@@ -67,23 +80,24 @@ function record=PubMedParse(raw)
 
 		% StartPage
 		start=strfind(str,'<StartPage>');
-		finish=strfind(str,'</StartPage>');
-		record.StartPage=str(start+11:finish-1);
+		if ~isempty(start)
+			finish=strfind(str,'</StartPage>');
+			record.StartPage=str(start+11:finish-1);
+		end
 
 		% EndPage
 		start=strfind(str,'<EndPage>');
-		finish=strfind(str,'</EndPage>');
-		record.EndPage=str(start+9:finish-1);
-
-	% DOI
-	start=strfind(raw,'<ELocationID EIdType="doi" ValidYN="Y">');
-	finish=strfind(raw,'</ELocationID>');
-	record.DOI=raw(start+39:finish-1);
+		if ~isempty(start)
+			finish=strfind(str,'</EndPage>');
+			record.EndPage=str(start+9:finish-1);
+		end
 	
 	% ABSTRACT
 	start=strfind(raw,'<AbstractText>');
-	finish=strfind(raw,'</AbstractText>');
-	record.Abstract=raw(start+14:finish-1);
+	if ~isempty(start)
+		finish=strfind(raw,'</AbstractText>');
+		record.Abstract=raw(start+14:finish-1);
+	end
 	
 	% AUTHORS
 	start=strfind(raw,'<AuthorList CompleteYN="Y">');
@@ -117,7 +131,7 @@ function record=PubMedParse(raw)
 		% AFFILILATIONS
 		a=strfind(str,'<Affiliation>');
 		b=strfind(str,'</Affiliation>');
-		for n=1:record.Authors.N
+		for n=1:numel(a)
 			record.Authors.Affiliation{n}=str(a(n)+13:b(n)-1);
 		end
 		
