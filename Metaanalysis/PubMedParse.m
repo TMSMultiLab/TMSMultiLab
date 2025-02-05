@@ -4,7 +4,9 @@ function record=PubMedParse(raw)
 		error('wrong number of arguments: one xml record is needed');
 	end
 	record=struct('PMID','','Journal','','Jrnl','','Volume','','Issue','','Year','','Month','','Day','','Title','','StartPage','','EndPage','','DOI','','Abstract','','Authors','','Language','');
-    
+
+	% the code can be improved by using regexp...
+    	
 	% PUMBED ID
 	start=strfind(raw,'<PMID Version="1">');
 	finish=strfind(raw,'</PMID>');
