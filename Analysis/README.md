@@ -5,11 +5,11 @@
 
 example:
 
-<code>data=randn(8000,1);</code> - single column of data
+<code>data=randn(8000,1);</code> - single column of data (1000ms before and after the pulse is recommended)
 
-<code>samplehz=4000;</code> - sampling frequency
+<code>samplehz=4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
 
-<code>pulsetime=1000;</code> - time in ms that the stimulus was presented
+<code>pulsetime=1000;</code> - time in ms that the stimulus was presented (1000ms is recommended)
 
 <code>[mep,options]=MEP(data,samplehz,pulsetime);</code>
 
