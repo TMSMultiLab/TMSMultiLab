@@ -1,4 +1,8 @@
-The data in this folder were collected starting in 2011 in the HandLab. For each participant in a TMS study, we measure the head from nasion to inion and between the pre-auricular points.
+# BioMetrics data relevant to TMS studies
+The data and code in this folder provide estimates of important variables used in TMS research, for example the latencies and amplitudes of evoked potentials (sensory or motor), and the relationship between heights, ages, sex, and head sizes of participants. Optimal use of this information is likely to decrease between-participant variation in basic TMS methods.
+
+## HandLab Data
+Data preceded by 'HandLab' were collected starting in 2011 in the HandLab. For each participant in a TMS study, we measure the head from nasion to inion and between the pre-auricular points.
 
 More recently we also measure the head circumference (nasion - pre-auricular point - inion), and we are also starting to systematically measure participant height, weight, and arm length.
 
