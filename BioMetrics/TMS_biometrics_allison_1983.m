@@ -88,6 +88,55 @@ for s=1:size(subset,1)                                                       % f
     end
 end
 
+%% plot relationships between age, sex and latency, for each potential
+for p=1:numel(SEP_labels)-1
+    figure(p);
+    for s=1:4
+        subplot(2,2,s);
+        hold on;
+	titletext='';
+        if s<3
+	    idx=SEP_idx(:,p) & male;
+	    plotcol='b';
+	    titletext=[titletext,'Male, '];
+	else
+	    idx=SEP_idx(:,p) & female;
+	    plotcol='r';
+            xlabel('Age, years');
+	    titletext=[titletext,'Female, '];
+	end
+	if mod(s,2)==1
+            ylabel('Latency, ms');
+	    X=SEP.AGE(idx);
+	    xticks([1,10,20,40,100]);
+	    xticklabels({'1','10','20','40','100'});
+	    titletext=[titletext,'linear age'];
+	else
+	    X=log10(SEP.AGE(idx));
+	    xticks(log10([0.1,1,5,10,20,40,100]));
+	    xticklabels({'0.1','1','5','10','20','40','100'});
+	    titletext=[titletext,'log age'];
+	end
+	Y=SEP.Latency(idx);
+        plot(X,Y,[plotcol,'o']);
+    
+        % fit linear model
+        mdl=fitlm(X,Y);
+        xpred=linspace(min(X),max(X))';
+        [ypred,ci]=predict(mdl,xpred);
+        plot(xpred,ypred,[plotcol,'-'],'Linewidth',2);
+        plot(xpred,ci(:,1),[plotcol,'--']);
+        plot(xpred,ci(:,2),[plotcol,'--']);
+	
+	a=axis;
+	text(mean(a(1:2)),a(3)+(a(4)-a(3))./10,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcol,'FontSize',12);
+	title(titletext,'Color',plotcol,'FontSize',10);	
+	    
+    end   
+    print(['data/allison-t_1983-',SEP_labels{p}],'-dpng');
+    close(p);
+end
+    
 % 17 unique participants - correlations between all components, N10-P26, with height
 idx=isfinite(SEP.ID);
 subset=sortrows(SEP(idx,:));
@@ -121,7 +170,17 @@ for q=1:5
 	else
 	    plotcol='k';
 	end
-        plot(potentials(:,xs(p)),potentials(:,ys(q)),[plotcol,'.'],'MarkerSize',8);
+	X=potentials(:,xs(p));
+	Y=potentials(:,ys(q));
+        plot(X,Y,[plotcol,'.'],'MarkerSize',8);
+	
+	% fit linear model
+        mdl=fitlm(X,Y);
+        xpred=linspace(min(X),max(X))';
+        [ypred,ci]=predict(mdl,xpred);
+        plot(xpred,ypred,[plotcol,'-']);
+
+	% format graph
         set(gca,'FontSize',6);
 	if q==1
             title(SEP_labels{xs(p)});
@@ -131,6 +190,8 @@ for q=1:5
         if p==1
             ylabel(SEP_labels{ys(q)});
         end
+	a=axis;
+	text(mean(a(1:2)),a(3)+(a(4)-a(3))./10,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcol,'FontSize',6);
     end
 end
 print('data/allison-t_1983_correls.png','-dpng');
