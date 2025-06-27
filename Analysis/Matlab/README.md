@@ -1,4 +1,4 @@
-# code to analyse TMS data
+# Code to analyse TMS data
 
 ## EMG_filter.m
 <code>MEP.m</code> accepts an m x n array of time-series data, where individual channels of data are in columns. needs at minimum the sampling frequency (to perform a 2nd order, zero phase 20-500Hz bandpass). it returns the same data after filtering. options include order (default=2), lower frequency cutoff (default=20), upper frequency cutoff (default=500).
