@@ -1,18 +1,17 @@
-% function filtered=hl_emg_filter(data, samplehz [,order] [,lowhz] [,highhz])
+% function filtered=EMG_filter(data, samplehz [,order] [,lowhz] [,highhz])
 % data = columns of emg data
 % samplehz = sampling frequency of data
 % order = of filter; default = 1 (2 x 1st order)
 % lowhz = high-pass cut-off; default=20hz
 % highhz = low-pass cut-off; default=500hz
 % uses: filtfilt
-% used by: hl_mep
 
 %% version history
 % 27th June 2025 (after discussion with Justin Andrushko & Jason DeFreitas)
 %	changed defaults to 20-500Hz
 % 	added order as an option, default to 1st
 
-function filtered=hl_emg_filter(data,samplehz,order,lowhz,highhz)
+function filtered=EMG_filter(data,samplehz,order,lowhz,highhz)
     if nargin==2
         order=1;
         lowhz=20;
