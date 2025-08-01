@@ -7,6 +7,8 @@
 
 within a script, specify, eg:
 
+<code>data = randn(8000,1);</code> - single column of data
+
 <code>samplehz = 4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
 
 <code>stimtime = 0.2;</code> - time in seconds that the stimulus was presented (at least 100ms of pre-stimulus baseline is recommended)
@@ -26,6 +28,8 @@ used by:
 
 within a script, specify, eg:
 
+<code>data = randn(8000,4);</code> - four columns of data
+
 <code>samplehz = 4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
 
 <code>order = 1;</code> - order of filter, which is used twice, so 1 -> 2nd order, 2 -> 4th order (default = 1, 2nd order)
@@ -44,12 +48,12 @@ within a script, specify, eg:
 
 example:
 
-<code>data=randn(8000,1);</code> - single column of data (1000ms before and after the pulse is recommended)
+<code>data = randn(8000,1);</code> - single column of data (1000ms before and after the pulse is recommended)
 
-<code>samplehz=4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
+<code>samplehz = 4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
 
-<code>stimtime=1000;</code> - time in ms that the stimulus was presented (1000ms is recommended)
+<code>stimtime = 1000;</code> - time in ms that the stimulus was presented (1000ms is recommended)
 
-<code>[mep,options]=MEP(data,samplehz,pulsetime);</code>
+<code>[mep, options] = MEP(data, samplehz, pulsetime);</code>
 
 the <code>mep</code> structure contains fields including the peak-to-peak amplitude, <code>mep.amp</code>
