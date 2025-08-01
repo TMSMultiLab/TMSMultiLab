@@ -18,6 +18,10 @@
 %   opts.subplot = [1,1,1]          which subplot to plot to
 %   opts.title = [];                title for the figure
 %   opts.verbose = false            print info to screen
+%
+%   Version 1.0
+%   01 August 2025
+%   Nick Holmes https://github.com/TheHandLab
 
 function [output, opts, bootstrap] = cutaneomotor(data,samplehz,stimtime,opts)
 
