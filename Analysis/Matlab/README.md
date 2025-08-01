@@ -22,7 +22,7 @@ used by:
 
 
 ## EMG_filter.m
-<code>MEP.m</code> accepts an mxn array of time-series data, where individual channels of data are in n columns. needs at minimum the sampling frequency (to perform a 2nd order, zero phase 20-500Hz bandpass). it returns the same data after filtering. options include order (default=2), lower frequency cutoff (default=20), upper frequency cutoff (default=500).
+<code>EMG_filter.m</code> accepts an mxn array of time-series data, where individual channels of data are in n columns. needs at minimum the sampling frequency (to perform a 2nd order, zero phase 20-500Hz bandpass). it returns the same data after filtering. options include order (default=2), lower frequency cutoff (default=20), upper frequency cutoff (default=500).
 
 <code>filtered_data = EMG_filter(data,samplehz,order,lowhz,highhz);</code>
 
