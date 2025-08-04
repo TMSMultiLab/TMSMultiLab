@@ -1,5 +1,5 @@
 %% measure & remove the stimulus artefact from a single MEP (or mean MEP)
-% [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime [,artefactwindow] [,recovery] [,scale] [,exclude] [,plot_artefact])
+% [spike, fitresult, gof]=spike_artefact(data, samplehz, stimtime [,artefactwindow] [,recovery] [,scale] [,exclude] [,plot_artefact])
 % inputs required:
 % data (nx1 array)
 % sample frequency in hz (samples per second)
@@ -13,9 +13,9 @@
 % SARGE: Erez Y, et al. J Neurosci Methods. 2010. PMID: 20542059 Generalized framework for stimulus artifact removal	
 % Fisher et al 2012 - TMS artefact removed by double exponential curve, V(t)=A1.e^[-tk1/T1] - A2.e^[-tk2/T2)
 	
-function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwindow,recovery,scale,exclude,plot_artefact)
+function [spike, fitresult, gof]=spike_artefact(data, samplehz, stimtime, artefactwindow, recovery, scale, exclude, plot_artefact)
 
-    %% CHECK INPUT ARGUMENTS_______________________________________________
+    %% CHECK INPUT ARGUMENTS_____________________________________________
     if nargin == 1
         error('samplehz not given, tms time (in ms) not given');
     elseif nargin == 2
@@ -82,7 +82,7 @@ function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwin
         error('exclude window offset is after the end of the recovery window, should be at least 2 samples less than the recovery window');
     end
 
-    %% CONVERT INPUTS______________________________________________________
+    %% CONVERT INPUTS____________________________________________________
     artefactwindows = round(artefactwindow .* (samplehz./1000));            % convert to samples
     stimtimes = round(stimtime .* (samplehz ./ 1000));                      % convert to samples
     recoverys = round(recovery .* (samplehz ./ 1000));                      % convert to samples
@@ -91,63 +91,63 @@ function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwin
     duration = 1000 .* samples ./ samplehz;                                 % sampling duration in ms
     xrange = -stimtime : (1000 ./ samplehz) : duration - stimtime - (1 ./ samplehz);% x-axis range for the data
 
-    %% REMOVE DC OFFSET (mean of time up to artefact window)_______________
+    %% REMOVE DC OFFSET (mean of time up to artefact window)_____________
     data=data-mean(data(1:stimtimes-1));
     
-    %% SAVE ARTEFACT SPIKE in raw data, within Xms of stimulus onset_______
-    spike.full = zeros(size(data,1),1);                                    % for the full spike model
+    %% SAVE ARTEFACT SPIKE in raw data, within Xms of stimulus onset_____
+    spike.full = zeros(size(data,1),1);                                     % for the full spike model
     spike.full(stimtimes + artefactwindows(1) : stimtimes + artefactwindows(2)) = data(stimtimes + artefactwindows(1) : stimtimes + artefactwindows(2));
 
-    %% REMOVE NON-RECOVERABLE SPIKE FROM THE DATA__________________________
+    %% REMOVE NON-RECOVERABLE SPIKE FROM THE DATA________________________
     clean=data;
     clean(stimtimes + artefactwindows(1) : stimtimes + artefactwindows(2)) = NaN;
 
-    %% GET DIFFERENCE BETWEEN DATA AND SPIKE SO FAR = RESIDUAL ARTEFACT____
+    %% GET DIFFERENCE BETWEEN DATA AND SPIKE SO FAR = RESIDUAL ARTEFACT__
     spike.recovery = data - spike.full;
     
-    %% EXCLUDE SEGMENT FROM THE FIT?_______________________________________
-    if sum(isnan(exclude))==0                                              % if there is a segment to exclude
-        start = stimtimes + excludes(1) + 1;                               % start of interpolation window
-        finish = stimtimes + excludes(2) - 1;                              % end of interpolation window
-	starty = mean(spike.recovery(start-2:start+2));                    % start point for interpolation
-	finishy = mean(spike.recovery(finish-2:finish+2));                 % finish point for interpolation
-	delta = (finishy - starty) ./ (diff(excludes)-2);                  % mean change between samples within the window
-	if size(starty:delta:finishy,2) < size(start:finish,2)
-	    tmp=[starty : delta : finishy,finishy];
-	else
-	    tmp=starty : delta : finishy;
-	end
-	if delta~=0
-            spike.recovery(start:finish) = tmp;                            % interpolate the data
-	else
-	    spike.recovery(start:finish) = spike.recovery(start);
-	end
+    %% EXCLUDE SEGMENT FROM THE FIT?_____________________________________
+    if sum(isnan(exclude))==0                                               % if there is a segment to exclude
+        start = stimtimes + excludes(1) + 1;                                % start of interpolation window
+        finish = stimtimes + excludes(2) - 1;                               % end of interpolation window
+	    starty = mean(spike.recovery(start-2:start+2));                     % start point for interpolation
+	    finishy = mean(spike.recovery(finish-2:finish+2));                  % finish point for interpolation
+	    delta = (finishy - starty) ./ (diff(excludes)-2);                   % mean change between samples within the window
+	    if size(starty:delta:finishy,2) < size(start:finish,2)
+	        tmp=[starty : delta : finishy,finishy];
+	    else
+	        tmp=starty : delta : finishy;
+	    end
+	    if delta~=0
+            spike.recovery(start:finish) = tmp;                             % interpolate the data
+	    else
+	        spike.recovery(start:finish) = spike.recovery(start);
+	    end
     end	
 
-    %% FIT DOUBLE EXPONENTIAL CURVE TO THE RESIDUAL ARTEFACT_______________
+    %% FIT DOUBLE EXPONENTIAL CURVE TO THE RESIDUAL ARTEFACT_____________
     % f(x) = a*exp(b*x) + c*exp(d*x)
-    x = xrange(stimtimes + artefactwindows(2) +1 : stimtimes + recoverys)';% the x data potentially affected by the artefact
+    x = xrange(stimtimes + artefactwindows(2) +1 : stimtimes + recoverys)'; % the x data potentially affected by the artefact
     y = spike.recovery(stimtimes + artefactwindows(2) +1 : stimtimes + recoverys);% the EMG data affected by the artefact   
     [ xData, yData ] = prepareCurveData( x, y );                            % not sure what this does
    
-    %% SET UP FIT TYPE AND OPTIONS_________________________________________
+    %% SET UP FIT TYPE AND OPTIONS_______________________________________
     ft = fittype( 'exp2' );
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
     opts.Display = 'Off';
     opts.StartPoint = [0  0.1  0  0];
 
-    %% FIT MODEL TO DATA___________________________________________________
+    %% FIT MODEL TO DATA_________________________________________________
     [fitresult, gof] = fit( xData, yData, ft, opts );                       % fit the model
     spike.yfit = fitresult.a .* exp(fitresult.b .* x) + fitresult.c .* exp(fitresult.d .* x); % get fitted y values
 
-    %% LAST POINT IN YFIT SHOULD BE ZERO TO AVOID STEP-ARTEFACTS___________
+    %% LAST POINT IN YFIT SHOULD BE ZERO TO AVOID STEP-ARTEFACTS_________
     spike.envelope=sqrt((max(xData)-xData) ./ max(xData));                  % multiply model by this to diminish effect of later timepoints (reduces data removal)
     spike.yfit = spike.yfit .* spike.envelope;
 
-    %% ADD FITTED DATA TO THE SPIKE RECONSTRUCTION_________________________
+    %% ADD FITTED DATA TO THE SPIKE RECONSTRUCTION_______________________
     spike.full(stimtimes + artefactwindows(2) +1 : stimtimes + recoverys) = spike.yfit .* scale; % multiply by scaling factor
 
-    %% REMOVE SPIKE ARTEFACT FROM DATA_____________________________________
+    %% REMOVE SPIKE ARTEFACT FROM DATA___________________________________
     spike.recovered = data - spike.full;
 
     %% INTERPOLATE BETWEEN THE LAST GOOD SAMPLE AND FIRST GOOD RECONSTRUCTED SAMPLE
@@ -160,15 +160,15 @@ function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwin
         spike.recovered(start:finish) = spike.recovered(start);
     end
 
-    %% BANDPASS FILTER THE DATA_____________________________________________
-    padded = [repmat(spike.recovered(1),0.1.*samplehz,1);spike.recovered;repmat(spike.recovered(end),0.1.*samplehz,1)];% pad with 100ms to avoid filter roll-off
+    %% BANDPASS FILTER THE DATA__________________________________________
+    padded = [repmat(spike.recovered(1),0.1.*samplehz,1);spike.recovered;repmat(spike.recovered(end),0.1.*samplehz,1)];% pad with 100ms to reduce filter roll-off
     filtered=EMG_filter(padded,samplehz,1,20,500);                          % filter 20-500Hz
-    spike.filtered=filtered(0.1.*samplehz+1:end-0.1.*samplehz);             % remove the pad
+    spike.filtered=filtered(0.1.*samplehz+1:end-0.1.*samplehz);             % remove the padding (still leaves ~10 samples of data at start and end which are affected by filter - remove!)
 	
-    %% PLOT THE DATA________________________________________________________
+    %% PLOT THE DATA_____________________________________________________
     if plot_artefact
 
-        % TOP SUBPLOT = RAW DATA____________________________________________
+        % TOP SUBPLOT = RAW DATA___________________________________________
         figure;
         subplot(5,2,1);                                                     % full scale
         hold on;
@@ -183,7 +183,7 @@ function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwin
         axis([artefactwindow(1)-10,recovery+10,a(3),a(4)]);
         title('Zoomed in');
 
-        % NEXT SUBPLOT = SPIKE DATA_________________________________________
+        % NEXT SUBPLOT = SPIKE DATA________________________________________
         subplot(5,2,3);                                                     % full scale
         hold on;
         plot(xrange,spike.full,'r-');
@@ -211,7 +211,7 @@ function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwin
         plot([artefactwindow(2),artefactwindow(2)],[a(3),a(4)],'r-');       % artefact window end
         axis([artefactwindow(1)-10,recovery+10,a(3),a(4)]);                 % rescale axis
         
-        % NEXT SUBPLOT = MODELLED FIT AND REMOVAL___________________________
+        % NEXT SUBPLOT = MODELLED FIT AND REMOVAL__________________________
         subplot(5,2,7);                                                     % full scale
         hold on;
         plot(xrange,spike.recovered,'b-');
@@ -224,7 +224,7 @@ function [spike,fitresult,gof]=spike_artefact(data,samplehz,stimtime,artefactwin
         plot([0,0],[a(3),a(4)],'k-');
         axis([artefactwindow(1)-10,recovery+10,a(3),a(4)]);                 % rescale axis
 
-        % LAST SUBPLOT = FILTERED CLEANED DATA______________________________
+        % LAST SUBPLOT = FILTERED CLEANED DATA_____________________________
         subplot(5,2,9);                                                     % full scale
         hold on;
         plot(xrange,spike.filtered,'b-');

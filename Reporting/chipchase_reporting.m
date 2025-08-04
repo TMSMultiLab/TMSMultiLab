@@ -6,9 +6,9 @@
 % q 29-30   analysis
 
 %% LOAD THE DATA___________________________________________________________
-items_raw=readtable('chipchase_items_raw.csv');
-studies=readtable('chipchase_studies.csv');
-items_means=readtable('chipchase_items_means.csv');
+items_raw=readtable('chipchase_items_raw.csv');                             % studies with individual items reported: per study and per item
+studies=readtable('chipchase_studies.csv');                                 % studies with overall reporting score only: per study
+items_means=readtable('chipchase_items_means.csv');                         % meta-studies with overall item score only: per item
 
 %% REMOVE DUPLICATE STUDIES________________________________________________
 items_raw_duplicates=[];
@@ -23,7 +23,6 @@ for p=1:numel(duplicates)                                                   % fo
     
     % save duplicates for later analysis
     items_raw_duplicates=[items_raw_duplicates;items_raw(ix,:)];            % append data to new table
-    
     d=nanmean(table2array(items_raw(ix,5:end)));                            % get mean across valid inputs
     items_raw(ix(1),5:end) = array2table(d);                                % put the mean back into the first repeat
     items_raw(ix(2:end),:)=[];                                              % remove the duplicated data
@@ -64,6 +63,30 @@ PerR=TotR./CouR;
 PerC=TotC./CouC;
 items_raw=addvars(items_raw,PerR,PerC);
 
+%% EXTRACT CITATION DATA FROM PUBMED & SAVE (WARNING: DO NOT SPAM PUBMED! - 4-8 seconds between each query - )
+if exist('chipchase_pmids.mat','file')==0                                   % if the PMID data have not yet been extracted...
+    ix=isfinite(items_raw.PMID);                                            % which have PMIDS?
+    pmids=sortrows(items_raw.PMID(ix));                                     % list of PMIDS from items_raw table, in order
+    ix=isfinite(studies.PMID);                                              % which have PMIDS?
+    pmids=sortrows([pmids;sortrows(studies.PMID(ix))]);                     % list of PMIDS from studies table, in order
+    duplicates=diff(pmids)==0;                                              % which are duplicated
+    pmids=pmids(~duplicates);                                               % remove the duplicates
+    pubmeddata=struct();                                                    % for saving the pubmed data
+    addpath('../Metaanalysis/');                                            % add path to TMSMultiLab PubMed functions
+    
+    % additional PMID to add
+    pmids(size(pmids,1)+1)=37586677;
+
+    for p=572%1:numel(pmids)                                                    % for each unique PMID
+        disp([' Retrieving record ',int2str(p),'...']);                     % keep us informed
+        raw=PubMedGet(pmids(p));                                            % retrieve the PubMed XML record
+	pubmeddata(p)=PubMedParse(raw);                                     % parse the PubMed XML data into a structure
+    end
+    save('chipchase_pmids.mat','pubmeddata');
+else
+    load('chipchase_pmids.mat');                                            % load the previously-extracted data
+end
+
 %% PROPORTION OF STUDIES THAT MEET EACH CRITERION__________________________
 figure(1);
 hold on;
@@ -90,7 +113,6 @@ for q=1:items
             bs(i)=mean(sample(ceil(rand(bn,1).*bn)));                       % get mean of a random sample with replacement
         end
         bs=sortrows(bs);                                                    % arrange from small to large
-	
         plot(q+jitter(r),(t+t2)./(n+n2),[plotcols{r},'o'],'MarkerFaceColor',plotcols{r});% plot the mean data
         plot([q+jitter(r),q+jitter(r)],[bs(250),bs(9750)],[plotcols{r},'-'],'LineWidth',2);% plot the 95% bootstrapped confidence interval
 	
@@ -117,16 +139,52 @@ close(1);
 
 %% TOTAL REPORTING AND CONTROLLING SCORES OVER TIME________________________
 % summary data from items_raw table
-d=[items_raw.PerR,items_raw.PerC,items_raw.YEAR];                          % all the available data
+d=[items_raw.PerR,items_raw.PerC,items_raw.YEAR,items_raw.PMID];           % all the available data
 
 % add data from studies table
 ix=~isfinite(studies.R);                                                   % if 'R' data missing, use TOTAL data
 tmp=studies;                                                               % copy temporarily
 tmp.R(ix)=tmp.TOTAL(ix);                                                   % copy some TOTAL data into R column
-d=[d;tmp.R./100,tmp.C./100,tmp.YEAR];                                      % concatenate all R and T data with items_raw summaries
+d=[d;tmp.R./100,tmp.C./100,tmp.YEAR,tmp.PMID];                             % concatenate all R and T data with items_raw summaries
 clear ix tmp;                                                              % remove temporary variables
 
+%% CORRECT THE YEAR WITH THE PUBLICATION DATA FROM PUBMED DATA_____________
+journals=strings(size(d,1),1);                                             % to hold the journal abbreviations
+for n=1:size(d,1)                                                          % for each unique article
+    if isfinite(d(n,4))
+        j=find([pubmeddata.PMID]==d(n,4));                                 % find in the pubmed table
+        str=int2str(pubmeddata(j).Year);                                   % build a date string, from the year...
+        if ~isempty(pubmeddata(j).Month)
+            str=[str,'-',pubmeddata(j).Month];                             % and the month...
+	    if ~isempty(pubmeddata(j).Day)
+	        str=[str,'-',int2str(pubmeddata(j).Day)];                  % and the day
+	    else
+	        str=[str,'-15'];                                           % assume middle of month if missing day
+	    end
+        else
+            str=[str,'-July-01'];                                          % assume middle of year if missing month & day
+        end
+        d(n,3)=datenum(datetime(str))./365.25;                             % convert to fractional year
+        journals{n}=pubmeddata(j).Jrnl;                                    % list of journal abbreviations
+    end
+end
+
+% fix some missing journals data
+js=unique(journals);                                                       % list of unique journals
+j=numel(js);
+journals_unique=cell(j,4);                                                 % Journal name, N, mean, SD
+% get N and mean reporting per journal
+for j=1:size(journals_unique,1)
+    journals_unique{j,1}=js(j,:);
+    disp(journals_unique{j,1});
+    ix=find(strcmp(journals,journals_unique{j,1})==1);
+    journals_unique{j,2}=numel(ix);
+    journals_unique{j,3}=nanmean(d(ix,1));                                 % mean reporting
+    journals_unique{j,4}=nanstd(d(ix,1));                                  % SD reporting
+end
+
 % index to valid data
+clear ix;
 ix(:,1)=isfinite(d(:,1));
 ix(:,2)=isfinite(d(:,2));
 xpred=linspace(min(d(:,3)),max(d(:,3)))';                                  % 100 equally spaced points across years
@@ -143,7 +201,6 @@ for r=1:2
     % fit linear model
     mdl=fitlm(d(ix(:,r),3),d(ix(:,r),r));
     [ypred,ci]=predict(mdl,xpred);
-    
     plot(xpred,ypred,[plotcols{r},'-'],'Linewidth',2);
     plot(xpred,ci(:,1),[plotcols{r},'--']);
     plot(xpred,ci(:,2),[plotcols{r},'--']);
@@ -157,7 +214,7 @@ for r=1:2
     hold on;
     plot([2012,2012],[0,1],'-','Color',[0.6,0.6,0.6],'LineWidth',1);   
     for y=1985:2025
-        yx=logical(ix(:,r).*d(:,3)==y);                                     % index to studies in this year
+        yx=logical(ix(:,r).*d(:,3)>=y & ix(:,r).*d(:,3)<y+1);               % index to studies in this year
         N=sum(yx);
         if N>2
             M=nanmean(d(yx,r));                                             % mean across all studies for this year
@@ -184,3 +241,69 @@ xlabel('Year');
 set(gcf,'Position',[1,50,1200,600]);
 print('Chipchase_study_reporting.png','-dpng');
 close(2);
+
+
+%% REPEAT, THIS TIME FOR DIFFERENT JOURNALS
+
+%% find a journal name
+% find(strcmp(journals,"Clin Neurophysiol"))                               % in string array of same size as the data
+% find(strcmp(cellstr([journals_unique{:,1}]),'Clin Neurophysiol')==1)	   % in cell array with means across journals list
+
+% sort journals by most-represented first
+jix=nan(size(journals_unique,1),2);                                        % empty array
+jix(:,2)=[journals_unique{:,2}];                                           % number of articles per journal
+jix(:,1)=1:size(journals_unique,1);                                        % index to journals_unique
+jix=sortrows(jix,2,'descend');                                             % list of most-represented journals first
+plotcols={'r','b','g','c','k'};
+journals_unique{1,1}="Other";                                              % missing name is 2nd-most common
+journals(find(journals==""))="Other";                                      % replace missing journals
+
+figure(3);
+hold on;
+plot([2012,2012],[0,1],'-','Color',[0.6,0.6,0.6],'LineWidth',1);
+n=0;
+for j=[1:5]
+    k=mod(j-1,5)+1;
+    l=ceil(j./5);
+    ix=find(strcmp(journals,journals_unique{jix(j),1})==1);                % list of articles from this journal
+    plot(d(ix,3),d(ix,1),[plotcols{k},'o'],'MarkerFaceColor',plotcols{k},'MarkerSize',5);
+    mdl=fitlm(d(ix,3),d(ix,1));
+    xpred=linspace(min(d(ix,3)),max(d(ix,3)))';
+    [ypred,ci]=predict(mdl,xpred);
+    plot(xpred,ypred,[plotcols{k},'-'],'Linewidth',2);
+    plot(xpred,ci(:,1),[plotcols{k},':'],'Linewidth',1);
+    plot(xpred,ci(:,2),[plotcols{k},':'],'Linewidth',1);
+    label=strjoin([strip(journals_unique{jix(j),1}),', N=',int2str(journals_unique{jix(j),2})],'');
+    text(1986,1-(j./20),label,'color',plotcols{k},'FontSize',16);
+end
+axis([1985,2025,0,1]);
+set(gca,'FontSize',20);
+xlabel('Year');
+ylabel('Proportion criteria met');
+set(gcf,'Position',[1,50,1200,600]);
+print('Chipchase_study_reporting_journals.png','-dpng');
+close(3);
+
+% REPEAT FOR MEANS OF TOP 25 JOURNALS
+figure(4);
+hold on;
+n=0;
+for j=[1:25]
+    k=mod(j-1,5)+1;
+    l=ceil(j./5);
+    ix=find(strcmp(journals,journals_unique{jix(j),1})==1);                % list of articles from this journal
+    M=mean(d(ix,1));                                                       % mean
+    S=tinv(.975,numel(ix)-1).*std(d(ix,1))./sqrt(numel(ix));               % 95% CI
+    plot(j,M,[plotcols{k},'o'],'MarkerFaceColor',plotcols{k},'MarkerSize',5);
+    plot([j,j],[M-S,M+S],'-','Color',plotcols{k});
+end
+xticks(1:25);
+xticklabels([journals_unique{jix([1:25],1),1}]);
+set(gca,'FontSize',12);
+ylabel('Proportion criteria met');
+set(gcf,'Position',[1,50,1200,600]);
+print('Chipchase_study_reporting_journal_means.png','-dpng');
+close(4);
+
+%% PERHAPS ALSO WORTH LOOKING AT NUMBER OF AUTHORS PER PAPER
+%% AND AFFILIATION COUNTRY / REGION
