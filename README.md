@@ -41,4 +41,7 @@ If the wiki files change, you will need to <code>fetch</code> or <code>pull</cod
 ## 3. Developing the TMSMultiLab code & wiki
 If you're planning to make major changes to the code or wiki, or to contribute new material, you will most likely want to create your own <code>fork</code> of the TMSMultiLab repository. This allows you to work on the files without affecting anyone else's version of the repository. Once your changes have been completed, tested, and reviewed with other TMSMultiLab members, they can then be merged across into the main repository.
 
-1. 
+1. Log in to github and browse to the [TMSMultiLab repository](https://github.com/TMSMultiLab/TMSMultiLab)
+2. Click on the <code>Fork</code> menu button, choose the account to which you want the repository to be forked, and include the <code>main</code> branch
+3. You can now edit your own complete version of the TMSMultiLab code and wiki
+4. Come back here when you're ready to share your changes...
