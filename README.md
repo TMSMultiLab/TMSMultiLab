@@ -43,5 +43,5 @@ If you're planning to make major changes to the code, or to contribute new mater
 
 1. Log in to github and browse to the [TMSMultiLab repository](https://github.com/TMSMultiLab/TMSMultiLab)
 2. Click on the <code>Fork</code> menu button, choose the account to which you want the repository to be forked, and include the <code>main</code> branch
-3. You can now edit your own complete version of the TMSMultiLab code and wiki
-4. Come back here when you're ready to share your changes...
+3. You can now edit your own complete version of the TMSMultiLab code and wiki. While you _could_ do this on the github website, most likely you'll do this in a cloned version of your own (forked) repository on your local machine
+4. Come back here when you're ready to share and merge your changes...
