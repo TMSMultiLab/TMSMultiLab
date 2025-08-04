@@ -1,5 +1,5 @@
 %% process an array of epoched EMG data during background contraction with stimulus every epoch
-% [output, options, bootstrap] = cutaneomotor(data,samplehz,stimtime [,opts])
+% [output, options, bootstrap] = cutaneomotor(data,samplehz,stimtime [,options])
 % inputs required:
 % data - (m x n array, where m = samples per epoch; n = repetitions / epochs)
 % samplehs - sampling frequency in hz (samples per second)
