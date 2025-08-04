@@ -14,7 +14,7 @@ If you just want a few files, navigate to them and find the download button. Enj
 ## 2. Set up a read-only copy of the TMSMultiLab repository
 You can use git commands (or the github website) to clone the whole repository. This will set up all the TMSMultiLab files and directories on your local machine.
 
-Later on, when you want to update your local version to the latest versions, you can run the code <code>git pull</code> from the TMSMultiLab directory and it should do everything you need. Here's a quick guide to cloning the repository and the wiki:
+Later on, when you want to update your local version to the latest versions, you can run the code <code>git pull</code> from the TMSMultiLab directory on your local machine and it should do everything you need. Here's a quick guide to cloning the repository and the wiki:
 
 ### Cloning the repository to your local machine
 
