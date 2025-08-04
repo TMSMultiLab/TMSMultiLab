@@ -4,7 +4,7 @@
 % data - (m x n array, where m = samples per epoch; n = repetitions / epochs)
 % samplehs - sampling frequency in hz (samples per second)
 % stimtime - time in s at which the stimulus was applied (same on every epoch, measured from the start of the epoch; at least 0.05 s (50ms) is required)
-% opts - options for this analysis, with default options indicated, include:
+% options - options for this analysis, with default options indicated, include:
 %   opts.artefact = true            remove the stimulus artefact; default = true
 %   opts.filter = true              filter the data; default = true. can only be applied if opts.artefact is true
 %   opts.padding = 10;              padding in samples at start and end of epoch - to exclude filtering effects
