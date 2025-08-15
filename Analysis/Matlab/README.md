@@ -5,7 +5,7 @@
 
 <code>[spike, fitresult, gof] = spike_artefact(data, samplehz, stimtime [,artefactwindow] [,recovery] [,scale] [,exclude] [,plot_artefact]);</code>
 
-within a script, specify, eg:
+inputs:
 
 <code>data = randn(8000,1);</code> - single column of data
 
@@ -13,20 +13,31 @@ within a script, specify, eg:
 
 <code>stimtime = 0.2;</code> - time in seconds that the stimulus was presented (at least 100ms of pre-stimulus baseline is recommended)
 
+outputs:
+
+<code>spike</code>
+
+<code>fitresult</code>
+
+<code>got</code>
+
 requires:
+
 * EMG_filter (TMSMultiLab)
+
 * fit (Matlab)
 
 used by:
+
 * cutaneomotor (TMSMultiLab)
 
 
 ## EMG_filter.m
 <code>EMG_filter.m</code> accepts an mxn array of time-series data, where individual channels of data are in n columns. needs at minimum the sampling frequency (to perform a 2nd order, zero phase 20-500Hz bandpass). it returns the same data after filtering. options include order (default=2), lower frequency cutoff (default=20), upper frequency cutoff (default=500).
 
-<code>filtered_data = EMG_filter(data,samplehz,order,lowhz,highhz);</code>
+<code>filtered_data = EMG_filter(data, samplehz, order, lowhz, highhz);</code>
 
-within a script, specify, eg:
+inputs:
 
 <code>data = randn(8000,4);</code> - four columns of data
 
@@ -38,22 +49,48 @@ within a script, specify, eg:
 
 <code>highhz = 500;</code> - upper cut-off of the filter (default 500)
 
+outputs:
+
+<code>filtered_data</code> - filtered data of the same shape and size as the input data
+
 
 ## cutaneomotor.m
 <code>cutaneomotor.m</code> takes an mxn array of raw EMG data (m samples x n repeitions) and estimates changes in rectified mean EMG signal following a stimulus. designed to analyse the cutaneo-muscular reflex, it could be generalised to silent periods, h-reflexes or MEPs.
+
+<code>[output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime [, options]);</code>
+
+inputs:
+
+<code>data = randn(8000,1);</code> - single column of data (at least 100ms before and 250ms after stimtime is recommended)
+
+<code>samplehz = 4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
+
+<code>stimtime = 0.5;</code> - time in s that the stimulus was presented (at least 0.1s is recommended)
+
+outputs:
+
+<code>output</code> structure contains fields including
+
+<code>options</code> structure contains all the options used in processing
+
+<code>bootstrap</code> the final bootstrap iteration, along with summary data
 
 
 ## MEP.m
 <code>MEP.m</code> accepts a single column of time-series data and needs the sampling frequency and the time that the stimulation was given. options can also be given. it returns a structure of measurements.
 
-example:
+<code>[mep, options] = MEP(data, samplehz, stimtime);</code>
 
-<code>data = randn(8000,1);</code> - single column of data (1000ms before and after the pulse is recommended)
+inputs:
+
+<code>data = randn(8000,1);</code> - single column of data (1000ms before and after stimtime is recommended)
 
 <code>samplehz = 4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
 
 <code>stimtime = 1000;</code> - time in ms that the stimulus was presented (1000ms is recommended)
 
-<code>[mep, options] = MEP(data, samplehz, pulsetime);</code>
+outputs:
 
-the <code>mep</code> structure contains fields including the peak-to-peak amplitude, <code>mep.amp</code>
+<code>mep</code> structure containing fields including the peak-to-peak amplitude, <code>mep.amp</code>
+
+<code>options</code> structure containing all analysis options used
