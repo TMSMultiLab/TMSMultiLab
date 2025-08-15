@@ -24,7 +24,7 @@ Later on, when you want to update your local version to the latest versions, you
 4. type <code>git clone  https://github.com/TMSMultiLab/TMSMultiLab</code>
 5. it is done - you now have all the code in <code>MyFiles/TMSMultiLab</code>
 
-If you edit these files on your local machine, you will then need to <code>stage</code>, <code>commit</code>, and <code>push</code> them up to the main repository - this will require special authorizations!
+If you edit these files on your local machine, you will then need to <code>stage</code>, <code>commit</code>, and <code>push</code> them up to the main repository - this needs to be done as per below = 3. Developing the TMSMultiLab code & wiki
 
 To ignore any local changes when trying to pull updated files from the repository, you can use <code>git checkout Directory/File.ext</code> to ignore local changes on each file, and overwrite this local file with the updated repository file.
 
