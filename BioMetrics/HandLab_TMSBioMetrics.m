@@ -6,7 +6,7 @@
 % INTO OUTFILE '/var/www/html/upload/mysql/HandLab_TMSHeads.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n'"
 
 %% load the data
-heads=readtable('HandLab_TMSHeads.csv');
+heads=readtable('data/HandLab_TMSHeads.csv');
 
 %% rename the variables
 heads=renamevars(heads,["Var1","Var2","Var3","Var4","Var5","Var6","Var7","Var8","Var9","Var10","Var11","Var12","Var13","Var14"],["headid","headtype","participantid","sex","ethnicity","age","nasioninion","intertragal","nasionearinion","armlength","wristcirc","P_armlength","height","weight"]);
@@ -21,15 +21,15 @@ ps=ps(isfinite(ps));
 
 % matrices for data
 headstats=nan(numel(ps),17); % 1=participant id;
-			     %1 6:   2=age mean;    3=age SD;    4=age min;    5=age max;    6=age n
+                             %1 6:   2=age mean;    3=age SD;    4=age min;    5=age max;    6=age n
                              %2 7:   7=N-I mean;    8=N-I SD;    9=N-I min;   10=N-I max;   11=N-I n
                              %3 8:  12=E-E mean;   13=E-E SD;   14=E-E min;   15=E-E max;   16=E-E n
                              %4 9:  17=N-E-I mean; 18=N-E-I SD; 19=N-E-I min; 20=N-E-I max; 21=N-E-I n
                              %5 10: 22=ARM mean;   23=ARM SD;   24=ARM min;   25=ARM max;   26=ARM n
-			     %6 11: 27=wrist mean; 28=wrist SD; 29=wrist min; 30=wrist max; 31=wrist n
-			     %7 12: 32=P_ARM mean; 33=P_ARM SD; 34=P_ARM min; 35=P_ARM max; 36=P_ARM n
-			     %8 13: 37=height mean;38=height SD;39=height min;40=height max;41height n
-			     %9 14: 42=weight mean;43=weight SD;44=weight min;45=weight max;46=weight n
+                             %6 11: 27=wrist mean; 28=wrist SD; 29=wrist min; 30=wrist max; 31=wrist n
+                             %7 12: 32=P_ARM mean; 33=P_ARM SD; 34=P_ARM min; 35=P_ARM max; 36=P_ARM n
+                             %8 13: 37=height mean;38=height SD;39=height min;40=height max;41height n
+                             %9 14: 42=weight mean;43=weight SD;44=weight min;45=weight max;46=weight n
 
 %% extract data per participant
 headdata=table2array(heads(:,6:14));                                                  % convert table to array
@@ -72,27 +72,27 @@ jitter=(rand(size(headstats,1),1)-0.5)./3;                                      
 figure(1);
 subplot(2,2,1);
 title('Distributions of head measurements');
-histogram(headstats(:,ni));
-axis([22,44,0,80]);
+histogram(headstats(:,ni),20);
+axis([28,44,0,80]);
 xlabel('Nasion - Inion, cm');
 
 subplot(2,2,2);
-histogram(headstats(:,ee));
-axis([22,44,0,80]);
+histogram(headstats(:,ee),20);
+axis([28,44,0,80]);
 xlabel('Between Pre-auricular points, cm');
 
 subplot(2,2,3);
-histogram(headstats(:,hei));
-axis([140,190,0,10]);
+histogram(headstats(:,hei),20);
+axis([140,200,0,10]);
 xlabel('Height, cm');
 
 subplot(2,2,4);
-histogram(headstats(:,par));
+histogram(headstats(:,par),20);
 axis([50,100,0,25]);
 xlabel('Arm length, cm');
 
 set(gcf,'Position',[0,0,800,800]);
-print('HandLab_TMSBioMetrics_Distributions.png','-dpng');
+print('data/HandLab_TMSBioMetrics_Distributions.png','-dpng');
 close(1);
 
 % correlations between main measures
@@ -181,7 +181,7 @@ end
 text(150,4,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' L']);
 axis([140,190,2,4.5]);
 set(gcf,'Position',[0,0,800,800]);
-print('HandLab_TMSBioMetrics_Correlations.png','-dpng');
+print('data/HandLab_TMSBioMetrics_Correlations.png','-dpng');
 close(1);
 
 %% RUN THE TMSSites ANALYSIS TOO

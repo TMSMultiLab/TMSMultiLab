@@ -73,7 +73,7 @@ colours.Hand=[0,0,0];
 labels.Hand=[-6,-2];
 
 %% read the TMSSites table dumped from LabMan mysql database (participant database used by The Hand Lab)
-sites=readtable('HandLab_TMSSites.csv');
+sites=readtable('data/HandLab_TMSSites.csv');
 
 %% rename the variables
 sites=renamevars(sites,["Var1","Var2","Var3","Var4","Var5","Var6","Var7","Var8","Var9","Var10","Var11","Var12","Var13","Var14","Var15","Var16","Var17","Var18","Var19","Var20","Var21","Var22","Var23","Var24","Var25","Var26"],["tmssiteid","headid","headtype","participantid","sex","ethnicity","age","nasioninion","intertragal","nasionearinion","armlength","wristcirc","P_armlength","height","weight","tmsreference","tmshemisphere","tmssite","tmssitelateral","tmssiteanterior","tmsmuscle","tmsmusclestate","tmsmuscleactivation","tmsthresholdmethod","tmsthresholdcriterion","tmsthreshold"]);
@@ -257,7 +257,7 @@ for f=1:2
             text(0.25,-0.25,'Cz','FontSize',12);
             xlabel('Right of vertex, cm');
             ylabel('In front of vertex, cm');
-            print('HandLab_TMSSites_M1.png','-dpng');
+            print('data/HandLab_TMSSites_M1.png','-dpng');
         case 2
             plot(0,0,'kx','MarkerSize',12);
             text(0.005,-0.005,'Cz','FontSize',12);
@@ -268,7 +268,7 @@ for f=1:2
             axis([-.25,.25,-.1,.1]);
             xlabel('Right of vertex, relative');
             ylabel('In front of vertex, relative');
-            print('HandLab_TMSSites_M1_relative.png','-dpng');
+            print('data/HandLab_TMSSites_M1_relative.png','-dpng');
     end
 
 end

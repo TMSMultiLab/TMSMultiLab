@@ -67,11 +67,11 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         end
         if ~isfield(options,'duration')
             options.duration = [];                                          % minimum duration for a significant epoch, in ms (ignored if bootstrap used)
-        options.bootstrap = true;                                       % bootstrap the criterion for the minimum duration                                          
+            options.bootstrap = true;                                       % bootstrap the criterion for the minimum duration                                          
         end
         if ~isfield(options,'bootstrap')
             options.bootstrap = true;                                       % bootstrap the criterion for the minimum duration
-    end
+        end
         if isnumeric(options.duration) & ~isempty(options.duration)
         options.bootstrap = false;                                      % if a value for the duration is given, turn off the boostrap
         end
