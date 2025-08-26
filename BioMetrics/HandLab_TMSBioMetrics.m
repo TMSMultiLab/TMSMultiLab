@@ -1,7 +1,7 @@
 %% read the TMSHeads table dumped from LabMan mysql database (participant database used by The Hand Lab)
 
 %% SQL statement: 
-% "SELECT headid,headtype,LabMan.TMSHeads.participantid,headdate,IFNULL(nasioninion,\"\") AS \"nasioninion\",IFNULL(intertragal,\"\") AS \"intertragal\",IFNULL(nasionearinion,\"\") AS \"nasionearinion\",IFNULL(LabMan.TMSHeads.armlength,\"\") AS \"armlength\",IFNULL(wristcirc,\"\") AS \"wristcirc\",IFNULL(LabMan.Participants.armlength,\"\") AS \"P_armlength\",IFNULL(height,\"\") AS \"height\",IFNULL(weight,\"\") AS \"weight\",IFNULL(ethnicity,\"\") AS \"ethnicity\"
+% "SELECT headid,headtype,LabMan.TMSHeads.participantid,headdate,IFNULL(nasioninion,\"\") AS \"nasioninion\",IFNULL(intertragal,\"\") AS \"intertragal\",IFNULL(nasionearinion,\"\") AS \"nasionearinion\",IFNULL(LabMan.TMSHeads.armlength,\"\") AS \"armlength\",IFNULL(wristcirc,\"\") AS \"wristcirc\",IFNULL(LabMan.Participants.armlength,\"\") AS \"P_armlength\",IFNULL(LabMan.Participants.armspan,\"\") AS \"P_armspan\",IFNULL(height,\"\") AS \"height\",IFNULL(weight,\"\") AS \"weight\",IFNULL(ethnicity,\"\") AS \"ethnicity\"
 % FROM LabMan.TMSHeads LEFT JOIN LabMan.Participants ON LabMan.TMSHeads.participantid=LabMan.Participants.participantid
 % INTO OUTFILE '/var/www/html/upload/mysql/HandLab_TMSHeads.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n'"
 
@@ -9,7 +9,7 @@
 heads=readtable('data/HandLab_TMSHeads.csv');
 
 %% rename the variables
-heads=renamevars(heads,["Var1","Var2","Var3","Var4","Var5","Var6","Var7","Var8","Var9","Var10","Var11","Var12","Var13","Var14"],["headid","headtype","participantid","sex","ethnicity","age","nasioninion","intertragal","nasionearinion","armlength","wristcirc","P_armlength","height","weight"]);
+heads=renamevars(heads,["Var1","Var2","Var3","Var4","Var5","Var6","Var7","Var8","Var9","Var10","Var11","Var12","Var13","Var14","Var15"],["headid","headtype","participantid","sex","ethnicity","age","nasioninion","intertragal","nasionearinion","armlength","wristcirc","P_armlength","P_armspan","height","weight"]);
 
 % remove non-head measurements
 idx=~strcmp(heads.headtype,'head');
@@ -21,25 +21,26 @@ ps=ps(isfinite(ps));
 
 % matrices for data
 headstats=nan(numel(ps),17); % 1=participant id;
-                             %1 6:   2=age mean;    3=age SD;    4=age min;    5=age max;    6=age n
-                             %2 7:   7=N-I mean;    8=N-I SD;    9=N-I min;   10=N-I max;   11=N-I n
-                             %3 8:  12=E-E mean;   13=E-E SD;   14=E-E min;   15=E-E max;   16=E-E n
-                             %4 9:  17=N-E-I mean; 18=N-E-I SD; 19=N-E-I min; 20=N-E-I max; 21=N-E-I n
-                             %5 10: 22=ARM mean;   23=ARM SD;   24=ARM min;   25=ARM max;   26=ARM n
-                             %6 11: 27=wrist mean; 28=wrist SD; 29=wrist min; 30=wrist max; 31=wrist n
-                             %7 12: 32=P_ARM mean; 33=P_ARM SD; 34=P_ARM min; 35=P_ARM max; 36=P_ARM n
-                             %8 13: 37=height mean;38=height SD;39=height min;40=height max;41height n
-                             %9 14: 42=weight mean;43=weight SD;44=weight min;45=weight max;46=weight n
+                             %1   6:  2=age mean;    3=age SD;    4=age min;    5=age max;    6=age n
+                             %2   7:  7=N-I mean;    8=N-I SD;    9=N-I min;   10=N-I max;   11=N-I n
+                             %3   8: 12=E-E mean;   13=E-E SD;   14=E-E min;   15=E-E max;   16=E-E n
+                             %4   9: 17=N-E-I mean; 18=N-E-I SD; 19=N-E-I min; 20=N-E-I max; 21=N-E-I n
+                             %5  10: 22=ARM mean;   23=ARM SD;   24=ARM min;   25=ARM max;   26=ARM n
+                             %6  11: 27=wrist mean; 28=wrist SD; 29=wrist min; 30=wrist max; 31=wrist n
+                             %7  12: 32=P_ARM mean; 33=P_ARM SD; 34=P_ARM min; 35=P_ARM max; 36=P_ARM n
+                             %8  13: 37=P_SPAN mean;38=P_SPAN SD;39=P_SPAN min;40=P_SPAN max;41=P_SPAN n
+                             %9  14: 42=height mean;43=height SD;44=height min;45=height max;46=height n
+                             %10 15: 47=weight mean;48=weight SD;49=weight min;50=weight max;51=weight n
 
 %% extract data per participant
-headdata=table2array(heads(:,6:14));                                                  % convert table to array
+headdata=table2array(heads(:,6:15));                                                  % convert table to array
 n=0;
 for p=1:numel(ps)
     disp([' Participant ',int2str(ps(p))]);
     n=n+1;
     idx=heads.participantid==ps(p);
     headstats(n,1)=ps(p);
-    for stat=1:9
+    for stat=1:10
         start=(stat-1).*5+1;
         headstats(n,start+1)=nanmean(headdata(idx,stat));
         headstats(n,start+2)=nanstd(headdata(idx,stat));
@@ -59,39 +60,60 @@ nei=17;
 vol=(headstats(:,ni)./pi).*(headstats(:,ee)./pi).*(nanmean(headstats(:,[ni,ee]),2)./pi).*pi.*(2./3000);% estimate half-volume of head, in litres = a*b*c*pi*4/3, where a,b,c, are the three radii
 idx_vol=isfinite(vol);
 arm=22;
-wri=27;
 par=32;
 idx_par=isfinite(headstats(:,par));                                                   % arm length (participant value)
-hei=37;
+spa=37
+idx_spa=isfinite(headstats(:,spa));                                                   % arm span (participant value)
+hei=42;
 idx_hei=isfinite(headstats(:,hei));                                                   % height
-wei=42;
+wei=47;
 idx_wei=isfinite(headstats(:,wei));                                                   % weight
 jitter=(rand(size(headstats,1),1)-0.5)./3;                                            % jitter up to 0.16cm either way
 
 % histograms of BioMetrics
 figure(1);
-subplot(2,2,1);
+subplot(2,4,1);
 title('Distributions of head measurements');
 histogram(headstats(:,ni),20);
 axis([28,44,0,80]);
 xlabel('Nasion - Inion, cm');
 
-subplot(2,2,2);
+subplot(2,4,2);
 histogram(headstats(:,ee),20);
 axis([28,44,0,80]);
 xlabel('Between Pre-auricular points, cm');
 
-subplot(2,2,3);
+subplot(2,4,3);
+histogram(headstats(:,nei),20);
+axis([45,65,0,40]);
+xlabel('Head circumference, cm');
+
+%subplot(2,4,4);
+% histogram(headstats(:,nei),20); - M1-hand location
+%axis([0,10,0,10]);
+%xlabel('M1-hand lateral, cm');
+
+subplot(2,4,5);
 histogram(headstats(:,hei),20);
-axis([140,200,0,10]);
+axis([140,200,0,20]);
 xlabel('Height, cm');
 
-subplot(2,2,4);
+subplot(2,4,6);
+histogram(headstats(:,wei),20);
+axis([40,120,0,20]);
+xlabel('Weight, cm');
+
+subplot(2,4,7);
 histogram(headstats(:,par),20);
-axis([50,100,0,25]);
+axis([50,100,0,10]);
 xlabel('Arm length, cm');
 
-set(gcf,'Position',[0,0,800,800]);
+subplot(2,4,8);
+histogram(headstats(:,spa),20);
+axis([150,200,0,10]);
+xlabel('Arm span, cm');
+
+set(gcf,'Position',[0,0,1600,800]);
 print('data/HandLab_TMSBioMetrics_Distributions.png','-dpng');
 close(1);
 
