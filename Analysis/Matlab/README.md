@@ -3,7 +3,7 @@
 ## spike_artefact.m
 <code>spike_artefact.m</code> attempts to remove the electrical or magnetic artefacts associated with nerve or brain stimulation. it accepts an mx1 array of m samples of data and requires the sampling frequency and the stimulation time. uses a double-exponential fitting function to esimate the shape of the spike artefact over the period between 2ms and 75ms after the stimulus, and subtracts this function from the data. before subtraction, the exponential function is multiplied by a square-root function to progressively decrease the influence of the exponentials (and avoid step artefacts at the end). after subtraction, the data are linearly interpolated between 0 and 2ms (the 'non-recoverable period' of Erez et al., 2010). various options are available (need to put these all in <code>opts</code>). the function outputs a structure containing the cleaned (and filtered) data and (optionally) plots data to illustrate the artefact-removal process.
 
-<code>[spike, fitresult, gof] = spike_artefact(data, samplehz, stimtime [,artefactwindow] [,recovery] [,scale] [,exclude] [,plot_artefact]);</code>
+<code>[spike, fitresult, gof] = spike_artefact(data, samplehz, stimtime [, options]);</code>
 
 inputs:
 
@@ -12,6 +12,8 @@ inputs:
 <code>samplehz = 4000;</code> - sampling frequency in samples per second (at least 2000 is recommended)
 
 <code>stimtime = 0.2;</code> - time in seconds that the stimulus was presented (at least 100ms of pre-stimulus baseline is recommended)
+
+<code>options</code> - optional parameters, see code for details
 
 outputs:
 
