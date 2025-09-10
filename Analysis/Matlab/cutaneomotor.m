@@ -267,6 +267,5 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         ylabel('Relative EMG signal, A.U.');                                % y axis label
         title(options.title);                                               % add title to the graph
         axis([-50,options.latency(2),0,2]);                                 % focus on the most-relevant ranges
-    set(gcf,'Position',[50,50,1200,800]);                                   % set figure size before saving
     end
 end
