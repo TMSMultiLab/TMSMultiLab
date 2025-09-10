@@ -73,10 +73,10 @@ colours.Hand=[0,0,0];
 labels.Hand=[-6,-2];
 
 %% read the TMSSites table dumped from LabMan mysql database (participant database used by The Hand Lab)
-sites=readtable('HandLab_TMSSites.csv');
+sites=readtable('data/HandLab_TMSSites.csv');
 
 %% rename the variables
-sites=renamevars(sites,["Var1","Var2","Var3","Var4","Var5","Var6","Var7","Var8","Var9","Var10","Var11","Var12","Var13","Var14","Var15","Var16","Var17","Var18","Var19","Var20","Var21","Var22","Var23","Var24","Var25","Var26"],["tmssiteid","headid","headtype","participantid","sex","ethnicity","age","nasioninion","intertragal","nasionearinion","armlength","wristcirc","P_armlength","height","weight","tmsreference","tmshemisphere","tmssite","tmssitelateral","tmssiteanterior","tmsmuscle","tmsmusclestate","tmsmuscleactivation","tmsthresholdmethod","tmsthresholdcriterion","tmsthreshold"]);
+sites=renamevars(sites,["Var1","Var2","Var3","Var4","Var5","Var6","Var7","Var8","Var9","Var10","Var11","Var12","Var13","Var14","Var15","Var16","Var17","Var18","Var19","Var20","Var21","Var22","Var23","Var24","Var25","Var26","Var26"],["tmssiteid","headid","headtype","participantid","sex","ethnicity","age","nasioninion","intertragal","nasionearinion","armlength","wristcirc","P_armlength","P_armspan","height","weight","tmsreference","tmshemisphere","tmssite","tmssitelateral","tmssiteanterior","tmsmuscle","tmsmusclestate","tmsmuscleactivation","tmsthresholdmethod","tmsthresholdcriterion","tmsthreshold"]);
 %  1: 5 tmssiteid,headid,headtype*,participantid,sex*
 %  6:10 ethnicity*,age,nasioninion,intertragal,nasionearinion
 % 11:15 armlength,wristcirc,P_armlength,height,weight
@@ -96,14 +96,14 @@ ps=ps(isfinite(ps));
 %% extract data per participant
 
 %% NUMERIC DATA
-sitedata=table2array(sites(:,[1,2,4,7:15,19:20,23,26]));                    % convert table to array
+sitedata=table2array(sites(:,[1,2,4,7:16,20:21,24,27]));                    % convert table to array
 %  1: 5 siteid,headid,participantid,age,nasion-inion
 %  6:10 inter-tragal,nasion-ear-inion,armlength,wristcirc,P_armlength
 % 11:15 height,weight,sitelateral,siteanterior,muscleactivation
 % 16:20 threshold
 
 %% TEXT / LABEL DATA
-site.labels=table2array(sites(:,[5,6,16,17,18,21,22,24,25]));               % extract labels into own table
+site.labels=table2array(sites(:,[5:6,17:19,22:23,25:26]));                  % extract labels into own table
 % 1: 5 sex,ethnicity,tmsreference,tmshemisphere,tmssite
 % 6:10 tmsmuscle,tmsmusclestate,thresholdmethod,thresholdmethodcriterion
 ms=unique(site.labels(:,6));                                                % list of muscles in dataset (queried in this order)
@@ -127,12 +127,13 @@ sitestats=nan(size(sites,1),38);
 % 5 24:28 armlength (M,SD,min,max,n) = column 8
 % 6 29:33 wristcirc (M,SD,min,max,n) = column 9
 % 7 34:38 Parmlength (M,SD,min,max,n) = column 10
-% 8 39:43 height (M,SD,min,max,n) = column 11
-% 9 44:48 weight (M,SD,min,max,n) = column 12
-%10 49:53 sitelateral (M,SD,min,max,n) = column 13
-%11 54:58 siteanterior (M,SD,min,max,n) = column 14
-%12 59:63=muscleactivation (M,SD,min,max,n) = column 15
-%13 64:68=threshold (M,SD,min,max,n) = column 16
+% 8 39:43 Parmspan (M,SD,min,max,n) = column 11
+% 9 44:48 height (M,SD,min,max,n) = column 12
+%10 49:53 weight (M,SD,min,max,n) = column 13
+%11 54:58 sitelateral (M,SD,min,max,n) = column 14
+%12 59:63 siteanterior (M,SD,min,max,n) = column 15
+%13 64:68 muscleactivation (M,SD,min,max,n) = column 16
+%14 69:73 threshold (M,SD,min,max,n) = column 17
 
 %% aggregate data per participant__________________________________________
 n=0;
@@ -152,7 +153,7 @@ for p=1:numel(ps)
                 sitestats(n,1)=ps(p);                                       % save participant number
                 sitestats(n,2)=m;                                           % save muscle number
                 sitestats(n,3)=h;                                           % save hemisphere (1=left, 2=right)
-                for stat=1:13                                               % for each of the 13 stats in the above table
+                for stat=1:14                                               % for each of the 13 stats in the above table
                     start=3+(stat-1).*5;                                    % starting column in the array (5 measures per stat)
                     sitestats(n,start+1)=nanmean(sitedata(idx,stat+3));     % get the mean
                     sitestats(n,start+2)=nanstd(sitedata(idx,stat+3));      % the SD
@@ -173,12 +174,13 @@ ne=19;
 arm=24;
 wri=29;
 par=34;
-hei=39;
-wei=44;
-lat=49;
-ant=54;
-mus=59;
-thr=64;
+spa=39
+hei=44;
+wei=49;
+lat=54;
+ant=59;
+mus=64;
+thr=68;
 
 %% PLOT AVERAGE LOCATIONS FOR M1 HOTSPOTS IN CM & RELATIVE SPACE____________
 for f=1:2
@@ -257,7 +259,7 @@ for f=1:2
             text(0.25,-0.25,'Cz','FontSize',12);
             xlabel('Right of vertex, cm');
             ylabel('In front of vertex, cm');
-            print('HandLab_TMSSites_M1.png','-dpng');
+            print('data/HandLab_TMSSites_M1.png','-dpng');
         case 2
             plot(0,0,'kx','MarkerSize',12);
             text(0.005,-0.005,'Cz','FontSize',12);
@@ -268,7 +270,7 @@ for f=1:2
             axis([-.25,.25,-.1,.1]);
             xlabel('Right of vertex, relative');
             ylabel('In front of vertex, relative');
-            print('HandLab_TMSSites_M1_relative.png','-dpng');
+            print('data/HandLab_TMSSites_M1_relative.png','-dpng');
     end
 
 end
