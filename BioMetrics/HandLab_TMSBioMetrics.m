@@ -58,218 +58,142 @@ ee=12;
 idx_ee=isfinite(headstats(:,ee));                                                     % Ear-to-Ear
 nei=17;
 idx_nei=isfinite(headstats(:,nei));                                                   % Circumference
-vol=(headstats(:,ni)./pi).*(headstats(:,ee)./pi).*(nanmean(headstats(:,[ni,ee]),2)./pi).*pi.*(2./3000);% estimate half-volume of head, in litres = a*b*c*pi*4/3, where a,b,c, are the three radii
-idx_vol=isfinite(vol);
+vol = 52;
+headstats(:,vol) = (headstats(:,ni)./pi).*(headstats(:,ee)./pi).*(nanmean(headstats(:,[ni,ee]),2)./pi).*pi.*(2./3000);% estimate half-volume of head, in litres = a*b*c*pi*4/3, where a,b,c, are the three radii
+idx_vol=isfinite(headstats(:,vol));
 arm=22;
 par=32;
 idx_par=isfinite(headstats(:,par));                                                   % arm length (participant value)
-spa=37
+spa=37;
 idx_spa=isfinite(headstats(:,spa));                                                   % arm span (participant value)
 hei=42;
 idx_hei=isfinite(headstats(:,hei));                                                   % height
 wei=47;
 idx_wei=isfinite(headstats(:,wei));                                                   % weight
-jitter=(rand(size(headstats,1),1)-0.5)./3;                                            % jitter up to 0.16cm either way
+jitter=(rand(size(headstats,1),1)-0.5)./3;                                            % jitter up to 0.16 (cm, L, kg) either way
 
 % histograms of BioMetrics
+limits = [5,10,20:20:100,125:25:250,300:50:500];
+
 figure(1);
 subplot(2,4,1);
 title('Distributions of head measurements');
 histogram(headstats(:,ni),20);
-axis([28,44,0,80]);
+a=axis;
+N = sum(isfinite(headstats(:,ni)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Nasion - Inion, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 subplot(2,4,2);
 histogram(headstats(:,ee),20);
-axis([28,44,0,80]);
+a=axis;
+N = sum(isfinite(headstats(:,ee)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Between Pre-auricular points, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 subplot(2,4,3);
 histogram(headstats(:,nei),20);
-axis([45,65,0,40]);
+a=axis;
+N = sum(isfinite(headstats(:,nei)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Head circumference, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 %subplot(2,4,4);
 % histogram(headstats(:,nei),20); - M1-hand location
-%axis([0,10,0,10]);
+%a=axis;
+%N = sum(isfinite(ni));
+%b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+%axis([a(1),a(2),0,b]);
+%a=axis;
 %xlabel('M1-hand lateral, cm');
+%text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 subplot(2,4,5);
 histogram(headstats(:,hei),20);
-axis([140,200,0,20]);
+a=axis;
+N = sum(isfinite(headstats(:,hei)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Height, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 subplot(2,4,6);
 histogram(headstats(:,wei),20);
-axis([40,120,0,20]);
+a=axis;
+N = sum(isfinite(headstats(:,wei)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Weight, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 subplot(2,4,7);
 histogram(headstats(:,par),20);
-axis([50,100,0,20]);
+a=axis;
+N = sum(isfinite(headstats(:,par)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Arm length, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 subplot(2,4,8);
 histogram(headstats(:,spa),20);
-axis([150,200,0,10]);
+a=axis;
+N = sum(isfinite(headstats(:,spa)));
+b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
+axis([a(1),a(2),0,b]);
+a=axis;
 xlabel('Arm span, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 
 set(gcf,'Position',[0,0,1600,800]);
 print('data/HandLab_TMSBioMetrics_Distributions.png','-dpng');
 close(1);
 
-% correlations between main measures
+%% correlations between main measures__________________________________________________
+indices = [ ni,  ee;  ni, nei;  ee, nei; hei,vol;  hei, wei; hei,par;  hei,spa;];% pairs for correlation analyses
+units =  { 'cm','cm';'cm','cm';'cm','cm';'cm','L';'cm','kg';'cm','cm';'cm','cm';};
+subplots = [      1,        2,        3,       4,        5,        6,        7];
+lbls = {'Nasion - Inion','Between Pre-auricular points';'Nasion - Inion','Circumference';'Between Pre-auricular points','Circumference';'Height','Head volume';'Height','Weight';'Height','Arm length';'Height', 'Arm span'};
+idxs = {logical(idx_ni.*idx_ee);logical(idx_ni.*idx_nei);logical(idx_ee.*idx_nei);logical(idx_hei.*idx_vol);logical(idx_hei.*idx_wei);logical(idx_hei.*idx_par);logical(idx_hei.*idx_spa)};
+
 figure(1);
-subplot(2,4,1);                                                                       % NI & EE
-hold on;
-plot(headstats(:,ni)+jitter(randperm(size(jitter,1))),headstats(:,ee)+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,ni),headstats(:,ee));
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))');
-plot(linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))',ci(:,2),'r--');
-xlabel('Nasion - Inion, cm');
-ylabel('Between Pre-auricular points, cm');
-idx=logical(idx_ni.*idx_ee);                                                          % Ps with both NI and EE measures
-r=corrcoef(headstats(idx,ni),headstats(idx,ee));
-text(32,43,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
+for s = subplots                                                                       % for each subplot
+    subplot(2,4,s);                                                                    % where to plot it
+    hold on;
+    plot(headstats(:,indices(s,1))+jitter(randperm(size(jitter,1))),headstats(:,indices(s,2))+jitter(randperm(size(jitter,1))),'k+'); % plot the data
+    mdl=fitlm(headstats(:,indices(s,1)),headstats(:,indices(s,2)));                    % fit linear model
+    [ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))');% get the predicted data and CIs
+    plot(linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))',ypred,'r-');% plot the regression line
+    plot(linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))',ci(:,1),'r--');% plot the upper CI
+    plot(linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))',ci(:,2),'r--');% plot the lower CI
+    xlabel([lbls{s,1},', ',units{s,1}]);                                               % x-axis label
+    ylabel([lbls{s,2},', ',units{s,2}]);                                               % y-axis label
+    r=corrcoef(headstats(idxs{s},indices(s,1)),headstats(idxs{s},indices(s,2)));       % correlation between x and y
+    a = axis;                                                                          % get current axis limits
+    text(a(1)+(a(2)-a(1))/20,a(4)-(a(4)-a(3))/40,['r(',int2str(sum(idxs{s})-2),')=',num2str(r(1,2),3)]);% add the r-value to the plot
+    if mdl.Coefficients.Estimate(1)<0                                                  % get constant sign
+        sign_lbl=' ';
+    else
+        sign_lbl='+';
+    end
+    text(a(1)+(a(2)-a(1))/20,a(4)-(a(4)-a(3))/10,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' ',units{s,2}]);% add the equation to the plot
+    axis(a);                                                                           % set the axis back to where it was
 end
-text(32,42,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' cm']);
-axis([30,44,30,44]);
-
-subplot(2,4,2);                                                                       % NI & Circ
-hold on;
-plot(headstats(:,ni)+jitter(randperm(size(jitter,1))),headstats(:,nei)+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,ni),headstats(:,nei));
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))');
-plot(linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,ni)),nanmax(headstats(:,ni)))',ci(:,2),'r--');
-xlabel('Nasion - Inion, cm');
-ylabel('Circumference, cm');
-idx=logical(idx_ni.*idx_nei);                                                          % Ps with both NI and NEI measures
-r=corrcoef(headstats(idx,ni),headstats(idx,nei));
-text(32,68,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
-end
-text(32,67,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' cm']);
-axis([30,44,50,70]);
-
-subplot(2,4,3);                                                             % EE & Circ
-hold on;
-plot(headstats(:,ee)+jitter(randperm(size(jitter,1))),headstats(:,nei)+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,ee),headstats(:,nei));
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,ee)),nanmax(headstats(:,ee)))');
-plot(linspace(nanmin(headstats(:,ee)),nanmax(headstats(:,ee)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,ee)),nanmax(headstats(:,ee)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,ee)),nanmax(headstats(:,ee)))',ci(:,2),'r--');
-xlabel('Between Pre-auricular points, cm');
-ylabel('Circumference, cm');
-idx=logical(idx_ni.*idx_nei);                                                          % Ps with both NI and NEI measures
-r=corrcoef(headstats(idx,ee),headstats(idx,nei));
-text(32,68,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
-end
-text(32,67,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' cm']);
-axis([30,44,50,70]);
-
-subplot(2,4,5);                                                                       % height & head half-volume
-hold on;
-plot(headstats(:,hei)+jitter(randperm(size(jitter,1))),vol+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,hei),vol);
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,2),'r--');
-xlabel('Height, cm');
-ylabel('Head volume, litres');
-idx=logical(idx_hei.*idx_vol);                                                        % Ps with both measures
-r=corrcoef(headstats(idx,hei),vol(idx));
-text(145,4.4,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
-end
-text(145,4.2,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' L']);
-axis([140,190,2,4.5]);
-
-subplot(2,4,6);                                                                       % height & weight
-hold on;
-plot(headstats(:,hei)+jitter(randperm(size(jitter,1))),headstats(:,wei)+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,hei),headstats(:,wei));
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,2),'r--');
-xlabel('Height, cm');
-ylabel('Weight, kg');
-idx=logical(idx_hei.*idx_wei);                                                        % Ps with both measures
-r=corrcoef(headstats(idx,hei),headstats(idx,wei));
-text(145,105,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
-end
-text(145,100,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' kg']);
-axis([140,190,40,110]);
-
-subplot(2,4,7);                                                                       % height & arm length
-hold on;
-plot(headstats(:,hei)+jitter(randperm(size(jitter,1))),headstats(:,par)+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,hei),headstats(:,par));
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,2),'r--');
-xlabel('Height, cm');
-ylabel('Arm length, cm');
-idx=logical(idx_hei.*idx_par);                                                        % Ps with both measures
-r=corrcoef(headstats(idx,hei),headstats(idx,par));
-text(145,88,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
-end
-text(145,86,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' cm']);
-axis([140,190,60,90]);
-
-subplot(2,4,8);                                                                       % height & arm span
-hold on;
-plot(headstats(:,hei)+jitter(randperm(size(jitter,1))),headstats(:,spa)+jitter(randperm(size(jitter,1))),'k+');
-mdl=fitlm(headstats(:,hei),headstats(:,spa));
-[ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ypred,'r-');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,1),'r--');
-plot(linspace(nanmin(headstats(:,hei)),nanmax(headstats(:,hei)))',ci(:,2),'r--');
-xlabel('Height, cm');
-ylabel('Arm span, cm');
-idx=logical(idx_hei.*idx_spa);                                                        % Ps with both measures
-r=corrcoef(headstats(idx,hei),headstats(idx,spa));
-text(145,195,['r(',int2str(sum(idx)-2),')=',num2str(r(1,2),3)]);
-if mdl.Coefficients.Estimate(1)<0
-    sign_lbl=' ';
-else
-    sign_lbl='+';
-end
-text(145,190,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' cm']);
-axis([140,190,150,200]);
-
-set(gcf,'Position',[0,0,1600,800]);
-print('data/HandLab_TMSBioMetrics_Correlations.png','-dpng');
-close(1);
+set(gcf,'Position',[0,0,1600,800]);                                                    % make figure big
+print('data/HandLab_TMSBioMetrics_Correlations.png','-dpng');                          % print figure
+close(1);                                                                              % close figure
 
 %% RUN THE TMSSites ANALYSIS TOO
 HandLab_TMSSites;

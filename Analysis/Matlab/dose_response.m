@@ -114,17 +114,17 @@ function [fitresult, gof, options] = dose_response(dose, response, options)
     % plot the fit_________________________________________________________
     if options.plot
         offset(1) = abs(max(dose) - min(dose)) .* 0.017;                    % shift text by 1.7% of the x range
-        offset(2) = abs(max(response) - min(response)) .* 0.033;            % shift text by 3.3% of the y range
+        offset(2) = abs(max(response) - min(response)) .* 0.075;            % shift text by 7.5% of the y range
         plot([options.maxrange],[fitresult.a,fitresult.a],'r--');           % plot fitted baseline
         plot([options.maxrange],[fitresult.d,fitresult.d],'r--');           % plot fitted plateau
         plot([fitresult.c,fitresult.c],[fitresult.a,mean([fitresult.a,fitresult.d])],'r--');% plot fitted halfway point
         plot([options.maxrange(1),fitresult.c],[mean([fitresult.a,fitresult.d]),mean([fitresult.a,fitresult.d])],'r--');% plot to the fitted halfway point
         plot(tmp(:,1),yfit,'r-','LineWidth',1.5);                           % add fit to the plot
         a=axis;
-        text(options.maxrange(1),a(4).*0.950, ['  y = ',num2str(fitresult.d,3),' + (',num2str(fitresult.a,3),'-',num2str(fitresult.d,3),') / (1+ (x / ',num2str(fitresult.c,3),')^{',num2str(fitresult.b,3),'}, r^2 = ',num2str(gof.adjrsquare,3)],'Color','r');
-	text(options.maxrange(1),a(4).*0.850, ['  plateau = ',num2str(fitresult.d,3)], 'Color','k','FontSize', 8);% plateau point on Y-axis
-	text(options.maxrange(1),a(4).*0.775, ['  baseline = ',num2str(fitresult.a,3)], 'Color','k','FontSize', 8);% baseline point on Y-axis
-	text(options.maxrange(1),a(4).*0.700, ['  growth rate = ',num2str(fitresult.b,3)], 'Color','k','FontSize', 8);% baseline point on Y-axis
-	text(options.maxrange(1),a(4).*0.625, ['  50% response = (',num2str(fitresult.c,3),', ',num2str(mean([fitresult.a,fitresult.d]),3),')'], 'Color','k','FontSize', 8);% 50% points on X and Y axes
+        text(options.maxrange(1)+offset(1),a(4)-(offset(2).*1), ['  y = ',num2str(fitresult.d,3),' + (',num2str(fitresult.a,3),'-',num2str(fitresult.d,3),') / (1+ (x / ',num2str(fitresult.c,3),')^{',num2str(fitresult.b,3),'}, r^2 = ',num2str(gof.adjrsquare,3)],'Color','r');
+	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*3), ['  plateau = ',num2str(fitresult.d,3)], 'Color','k','FontSize', 9);% plateau point on Y-axis
+	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*4), ['  baseline = ',num2str(fitresult.a,3)], 'Color','k','FontSize', 9);% baseline point on Y-axis
+	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*5), ['  growth rate = ',num2str(fitresult.b,3)], 'Color','k','FontSize', 9);% baseline point on Y-axis
+	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*6), ['  50% response = (',num2str(fitresult.c,3),', ',num2str(mean([fitresult.a,fitresult.d]),3),')'], 'Color','k','FontSize', 9);% 50% points on X and Y axes
     end
 end

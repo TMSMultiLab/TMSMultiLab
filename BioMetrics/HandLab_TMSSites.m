@@ -228,6 +228,9 @@ for f=1:2
                     end
                     CI.lat=(SD.lat./sum(idx)).*tinv(.975,sum(idx)-1);       % 95% CI
                     CI.ant=(SD.ant./sum(idx)).*tinv(.975,sum(idx)-1);       % 95% CI
+                    PI.lat=SD.lat.*tinv(.975,sum(idx)-1);                   % 95% PI
+                    PI.ant=SD.ant.*tinv(.975,sum(idx)-1);                   % 95% PI		    
+		    
                     plot([M.lat-SD.lat,M.lat+SD.lat],[M.ant,M.ant],'-','color',colour,'LineWidth',1.5);
                     plot([M.lat,M.lat],[M.ant-SD.ant,M.ant+SD.ant],'-','color',colour,'LineWidth',1.5);
                     if sum(idx)>5
@@ -235,7 +238,11 @@ for f=1:2
                         t=linspace(0,360,1000);
                         x=CI.lat*sind(t);
                         y=CI.ant*cosd(t);
-                        plot(x+M.lat,y+M.ant,'color',colour,'LineWidth',1.5);
+                        plot(x+M.lat,y+M.ant,'-','color',colour,'LineWidth',1.5);
+			% 95% prediction ellipse
+                        x=PI.lat*sind(t);
+                        y=PI.ant*cosd(t);
+                        plot(x+M.lat,y+M.ant,':','color',colour,'LineWidth',0.5);
                     end
                 end
                 if h==1
@@ -257,6 +264,10 @@ for f=1:2
             axis([-9,9,-3.6,3.6]); % mean head size=36cm, this is 25% and 10%
             plot(0,0,'kx','MarkerSize',12);
             text(0.25,-0.25,'Cz','FontSize',12);
+	    text(2,-2.5,'Lines: Mean +- standard deviation');
+	    text(2,-2.75,'Solid ellipse: 95% confidence interval for the mean');
+	    text(2,-3,'Broken ellipse: 95% prediction interval for an individual');
+	    text(2,-3.25,'Squares: <6 datapoints');
             xlabel('Right of vertex, cm');
             ylabel('In front of vertex, cm');
             print('data/HandLab_TMSSites_M1.png','-dpng');
