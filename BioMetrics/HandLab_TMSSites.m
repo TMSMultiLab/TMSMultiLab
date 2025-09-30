@@ -116,7 +116,7 @@ site.state=site.labels(:,7);                                                % in
 site.method=site.labels(:,8);                                               % index of threshold method tested
 
 % matrices for data
-sitestats=nan(size(sites,1),38);
+sitestats=nan(size(sites,1),74);
 %  1    participantid
 %  2    muscle name
 %  3    hemisphere (1=left, 2=right)
@@ -134,8 +134,9 @@ sitestats=nan(size(sites,1),38);
 %12 59:63 siteanterior (M,SD,min,max,n) = column 15
 %13 64:68 muscleactivation (M,SD,min,max,n) = column 16
 %14 69:73 threshold (M,SD,min,max,n) = column 17
+%15 74    sex (convert text labels to numbers; 1 = female, 0 = not
 
-%% aggregate data per participant__________________________________________
+%% AGGREGATE DATA PER PARTICIPANT________________________________________
 n=0;
 for p=1:numel(ps)
     disp([' Participant ',int2str(ps(p)),'...']);
@@ -161,12 +162,16 @@ for p=1:numel(ps)
                     sitestats(n,start+4)=nanmax(sitedata(idx,stat+3));      % the maximum
                     sitestats(n,start+5)=sum(isfinite(sitedata(idx,stat+3)));% and the number of datapoints averaged
                 end
+                if strcmp(site.labels(find(sites.participantid==ps(p),1)),'Female')
+                    sitestats(n,74) = 1;                                    % code as female
+                else
+                    sitestats(n,74) = 0;                                    % code as non-female
+                end
             end
         end
     end
 end
 sitestats=sitestats(1:n,:);
-
 age=4;
 ni=9;
 ee=14;
@@ -174,15 +179,16 @@ ne=19;
 arm=24;
 wri=29;
 par=34;
-spa=39
+spa=39;
 hei=44;
 wei=49;
 lat=54;
 ant=59;
 mus=64;
-thr=68;
+thr=69;
+sex=74;
 
-%% PLOT AVERAGE LOCATIONS FOR M1 HOTSPOTS IN CM & RELATIVE SPACE____________
+%% PLOT AVERAGE LOCATIONS FOR M1 HOTSPOTS IN CM & RELATIVE SPACE_________
 for f=1:2
     figure(f);
     hold on;
@@ -239,7 +245,7 @@ for f=1:2
                         x=CI.lat*sind(t);
                         y=CI.ant*cosd(t);
                         plot(x+M.lat,y+M.ant,'-','color',colour,'LineWidth',1.5);
-			% 95% prediction ellipse
+			            % 95% prediction ellipse
                         x=PI.lat*sind(t);
                         y=PI.ant*cosd(t);
                         plot(x+M.lat,y+M.ant,':','color',colour,'LineWidth',0.5);
@@ -252,7 +258,7 @@ for f=1:2
                         text(label(1)./36,label(2)./36,[ms{m},' (',int2str(sum(idx)),')'],'Color',colour,'FontSize',12);
                     end
                 end
-                disp(['  Mean=(',num2str(M.lat,3),',',num2str(M.ant,3),')']);
+                disp(['  Mean=(',num2str(M.lat,3),',',num2str(M.ant,3),')']);FDI
             end
         end
     end
@@ -264,10 +270,10 @@ for f=1:2
             axis([-9,9,-3.6,3.6]); % mean head size=36cm, this is 25% and 10%
             plot(0,0,'kx','MarkerSize',12);
             text(0.25,-0.25,'Cz','FontSize',12);
-	    text(2,-2.5,'Lines: Mean +- standard deviation');
-	    text(2,-2.75,'Solid ellipse: 95% confidence interval for the mean');
-	    text(2,-3,'Broken ellipse: 95% prediction interval for an individual');
-	    text(2,-3.25,'Squares: <6 datapoints');
+	        text(2,-2.5,'Lines: Mean +- standard deviation');
+            text(2,-2.75,'Solid ellipse: 95% confidence interval for the mean');
+            text(2,-3,'Broken ellipse: 95% prediction interval for an individual');
+            text(2,-3.25,'Squares: <6 datapoints');
             xlabel('Right of vertex, cm');
             ylabel('In front of vertex, cm');
             print('data/HandLab_TMSSites_M1.png','-dpng');
@@ -285,47 +291,71 @@ for f=1:2
     end
 
 end
-clear ans colour f h hem idx m n p start stat;
 
-%% histograms of TMS site stats
-% figure(1);
-% subplot(3,1,1);
-% title('Distributions of head measurements');
-% histogram(headstats(:,2));
-% axis([22,44,0,80]);
-% xlabel('Nasion - Inion, cm');
-% subplot(3,1,2);
-% histogram(headstats(:,7));
-% axis([22,44,0,80]);
-% xlabel('Between Pre-auricular points, cm');
-% subplot(3,1,3);
-% histogram(headstats(:,12));
-% axis([22,44,0,80]);
-% xlabel('Nasion - Pre-auricular - Inion, cm');
-% set(gcf,'Position',[0,0,400,800]);
-% print('TMSMultiLab_Head_measurement_distribution.png','-dpng');
-% 
-% % correlations between measures
-% figure(1);
-% hold on;
-% plot(headstats(:,2),headstats(:,7),'ko');
-% mdl=fitlm(headstats(:,2),headstats(:,7));
-% [ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,2)),nanmax(headstats(:,2)))');
-% plot(linspace(nanmin(headstats(:,2)),nanmax(headstats(:,2)))',ypred,'r-');
-% plot(linspace(nanmin(headstats(:,2)),nanmax(headstats(:,2)))',ci(:,1),'r--');
-% plot(linspace(nanmin(headstats(:,2)),nanmax(headstats(:,2)))',ci(:,2),'r--');
-% xlabel('Nasion - Inion, cm');
-% ylabel('Between Pre-auricular points, cm');
-% axis([30,44,30,44
-% set(gcf,'Position',[0,0,700,700]);
-% print('TMSMultiLab_Head_measurement_correlation.png','-dpng');
-% 
-% idx_ni=isfinite(headstats(:,2));
-% idx_ee=isfinite(headstats(:,7));
-% idx_arm=isfinite(headstats(:,17));
-% idx=logical(idx_ni.*idx_ee);
-% corrcoef(headstats(idx,2),headstats(idx,7))
-% idx=logical(idx_ni.*idx_arm);
-% corrcoef(headstats(idx,2),headstats(idx,17))
-% idx=logical(idx_ee.*idx_arm);
-% corrcoef(headstats(idx,7),headstats(idx,17))
+%% CORRELATIONS BETWEEN BIOMETRICS AND SITES_____________________________
+% height versus distance of M1 hotspot from vertex
+X = sitestats(:,hei);                                                       % mean height of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sqrt(sitestats(:,lat).^2 + sitestats(:,ant).^2);                        % mean distance from vertex
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Height, cm');
+ylabel('M1-FDI distance from vertex, cm');
+
+X = sitestats(:,hei);                                                       % mean height of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sitestats(:,thr);                                                       % RMT threshold
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Height, cm');
+ylabel('M1-FDI threshold, %MSO');
+
+X = sitestats(:,ni);                                                        % mean N-I distance of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sqrt(sitestats(:,lat).^2 + sitestats(:,ant).^2);                        % mean distance from vertex
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Nasion-inion, cm');
+ylabel('M1-FDI distance from vertex, cm');
+
+X = sitestats(:,ee);                                                        % mean E-E distance of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sqrt(sitestats(:,lat).^2 + sitestats(:,ant).^2);                        % mean distance from vertex
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Ear-to-Ear, cm');
+ylabel('M1-FDI distance from vertex, cm');
+
+X = sitestats(:,ne);                                                        % mean circumference distance of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sqrt(sitestats(:,lat).^2 + sitestats(:,ant).^2);                        % mean distance from vertex
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Head circumference, cm');
+ylabel('M1-FDI distance from vertex, cm');
+
+X = sitestats(:,ni);                                                        % mean N-I distance of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sitestats(:,thr);                                                       % RMT threshold
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Nasion-inion, cm');
+ylabel('M1-FDI threshold, %MSO');
+
+X = sitestats(:,ee);                                                        % mean E-E distance of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sitestats(:,thr);                                                       % RMT threshold
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Ear-to-Ear, cm');
+ylabel('M1-FDI distance from vertex, cm');
+
+X = sitestats(:,ne);                                                        % mean circumference distance of participant
+idx = sitestats(:,2) == 8;                                                  % FDI = 8
+jitter = rand(sum(idx),1)./2 - 0.25;
+Y = sitestats(:,thr);                                                       % RMT threshold
+plot(X(idx)+jitter,Y(idx),'k+');
+xlabel('Head circumference, cm');
+ylabel('M1-FDI distance from vertex, cm');
+
+clear ans colour f h hem idx m n p start stat;
