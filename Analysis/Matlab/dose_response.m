@@ -27,6 +27,7 @@ function [fitresult, gof, options] = dose_response(dose, response, options)
         options.xlabel = 'Dose, A.U.';                                      % default x-label
         options.ylabel = 'Response, A.U.';                                  % default y-label
         options.title = 'Dose - response curve';                            % default title
+        options.annotate = true;                                            % annotate the graph
         options.fit = 'Sigmoidal';                                          % default (only, at present) curve fit
         options.lowerbounds = [-Inf,-Inf,-Inf,-Inf];                        % minimum possible values for a, b, c, d
         options.upperbounds = [Inf,Inf,Inf,Inf];                            % maximum possible values for a, b, c, d
@@ -63,6 +64,9 @@ function [fitresult, gof, options] = dose_response(dose, response, options)
     if ~isfield(options,'title')
         options.title = 'Dose - response curve';                            % default title
     end  
+    if ~isfield(options,'annotate')
+        options.annotate = true;                                            % default = annotate the graph
+    end  
     if ~isfield(options,'fit')
         options.fit = 'Sigmoidal';                                          % default (only, at present) curve fit
     end  
@@ -76,7 +80,11 @@ function [fitresult, gof, options] = dose_response(dose, response, options)
     %% PLOT THE DATA_____________________________________________________
     if options.plot
         figure(options.figure);                                             % set the figure
-        subplot(options.subplot(1),options.subplot(2),options.subplot(3));  % set the subplot
+        if numel(options.subplot)==3
+            subplot(options.subplot(1),options.subplot(2),options.subplot(3));  % set the subplot
+        elseif numel(options.subplot==1)
+            nexttile(options.subplot);
+        end
         hold on;
         plot([options.maxrange],[options.baseline,options.baseline],'k-');  % plot baseline
         plot(dose,response,'b*');                                           % plot the data
@@ -113,18 +121,22 @@ function [fitresult, gof, options] = dose_response(dose, response, options)
 
     % plot the fit_________________________________________________________
     if options.plot
-        offset(1) = abs(max(dose) - min(dose)) .* 0.017;                    % shift text by 1.7% of the x range
-        offset(2) = abs(max(response) - min(response)) .* 0.075;            % shift text by 7.5% of the y range
-        plot([options.maxrange],[fitresult.a,fitresult.a],'r--');           % plot fitted baseline
-        plot([options.maxrange],[fitresult.d,fitresult.d],'r--');           % plot fitted plateau
-        plot([fitresult.c,fitresult.c],[fitresult.a,mean([fitresult.a,fitresult.d])],'r--');% plot fitted halfway point
-        plot([options.maxrange(1),fitresult.c],[mean([fitresult.a,fitresult.d]),mean([fitresult.a,fitresult.d])],'r--');% plot to the fitted halfway point
+        if options.annotate
+            offset(1) = abs(max(dose) - min(dose)) .* 0.017;                    % shift text by 1.7% of the x range
+            offset(2) = abs(max(response) - min(response)) .* 0.075;            % shift text by 7.5% of the y range
+            plot([options.maxrange],[fitresult.a,fitresult.a],'r--');           % plot fitted baseline
+            plot([options.maxrange],[fitresult.d,fitresult.d],'r--');           % plot fitted plateau
+            plot([fitresult.c,fitresult.c],[fitresult.a,mean([fitresult.a,fitresult.d])],'r--');% plot fitted halfway point
+            plot([options.maxrange(1),fitresult.c],[mean([fitresult.a,fitresult.d]),mean([fitresult.a,fitresult.d])],'r--');% plot to the fitted halfway point
+        end
         plot(tmp(:,1),yfit,'r-','LineWidth',1.5);                           % add fit to the plot
         a=axis;
-        text(options.maxrange(1)+offset(1),a(4)-(offset(2).*1), ['  y = ',num2str(fitresult.d,3),' + (',num2str(fitresult.a,3),'-',num2str(fitresult.d,3),') / (1+ (x / ',num2str(fitresult.c,3),')^{',num2str(fitresult.b,3),'}, r^2 = ',num2str(gof.adjrsquare,3)],'Color','r');
-	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*3), ['  plateau = ',num2str(fitresult.d,3)], 'Color','k','FontSize', 9);% plateau point on Y-axis
-	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*4), ['  baseline = ',num2str(fitresult.a,3)], 'Color','k','FontSize', 9);% baseline point on Y-axis
-	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*5), ['  growth rate = ',num2str(fitresult.b,3)], 'Color','k','FontSize', 9);% baseline point on Y-axis
-	text(options.maxrange(1)+offset(1),a(4)-(offset(2).*6), ['  50% response = (',num2str(fitresult.c,3),', ',num2str(mean([fitresult.a,fitresult.d]),3),')'], 'Color','k','FontSize', 9);% 50% points on X and Y axes
+        if options.annotate
+            text(options.maxrange(1)+offset(1),a(4)-(offset(2).*1), ['  y = ',num2str(fitresult.d,3),' + (',num2str(fitresult.a,3),'-',num2str(fitresult.d,3),') / (1+ (x / ',num2str(fitresult.c,3),')^{',num2str(fitresult.b,3),'}, r^2 = ',num2str(gof.adjrsquare,3)],'Color','r');
+	        text(options.maxrange(1)+offset(1),a(4)-(offset(2).*3), ['  plateau = ',num2str(fitresult.d,3)], 'Color','k','FontSize', 9);% plateau point on Y-axis
+	        text(options.maxrange(1)+offset(1),a(4)-(offset(2).*4), ['  baseline = ',num2str(fitresult.a,3)], 'Color','k','FontSize', 9);% baseline point on Y-axis
+	        text(options.maxrange(1)+offset(1),a(4)-(offset(2).*5), ['  growth rate = ',num2str(fitresult.b,3)], 'Color','k','FontSize', 9);% baseline point on Y-axis
+	        text(options.maxrange(1)+offset(1),a(4)-(offset(2).*6), ['  50% response = (',num2str(fitresult.c,3),', ',num2str(mean([fitresult.a,fitresult.d]),3),')'], 'Color','k','FontSize', 9);% 50% points on X and Y axes
+        end
     end
 end
