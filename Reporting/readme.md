@@ -4,4 +4,4 @@ The raw data files were compiled from 32 studies which reported a meta-analysis 
 
 All studies used the [Chipchase et l. 2012](https://doi.org/10.1016/j.clinph.2012.05.003) checklist.
 
-The analysis file loads the data, removes duplicates, and plots graphs to illustrate the data.
+The analysis file loads the data, removes duplicates, downloads meta-data from PubMed, analyses and plots graphs to illustrate the data.
