@@ -15,8 +15,9 @@
 %   options.iterations = 1000;         iterations in the bootstrap
 %   options.plot = true                plot the data
 %   options.figure = 1                 which figure to plot to
-%   options.subplot = [1,1,1]          which subplot to plot to
+%   options.subplot = [1,1,1]          which subplot to plot to (or tile if a single number)
 %   options.title = [];                title for the figure
+%   options.annotate = true           annotate the graph
 %   options.verbose = false            print info to screen
 %
 %   Version 1.0
@@ -36,28 +37,29 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         error('output=cutaneomotor(data,samplehz,stimtime [,options]) - stimtime must be at least 0.05s (50ms), or at least 0.1s (100ms) with artefact removal and filtering');
     end
     if nargin == 3                                                          % load the default options
-        options.artefact=true;                                              % remove the stimulus artefact using spike_artefact.m
-        options.filter=true;                                                % filter the EMG data using EMG_filter.m
+        options.artefact = true;                                            % remove the stimulus artefact using spike_artefact.m
+        options.filter = true;                                              % filter the EMG data using EMG_filter.m
         options.padding = 10;                                               % padding in samples at start and end of epoch - to exclude filtering effects
         options.criterion = 1.96;                                           % use 1.96 standard deviations (across samples of the baseline) as the criterion for creating sequences
-        options.latency = [20,250];                                         % range of times after stimulus to search for changes in EMG signals
+        options.latency = [20,250];                                         % range of times after stimulus to search for changes in EMG signals    
         options.duration = [];                                              % minimum duration for a significant sequence, in ms (if bootstrapping not used); empty = use bootstrap
         options.bootstrap = true;                                           % bootstrap the criterion for the minimum duration
         options.iterations = 1000;                                          % iterations in the bootstrap
-        options.plot=true;                                                  % plot the data
-        options.figure=1;                                                   % to figure 1
-        options.subplot=[1,1,1];                                            % to subplot 1
+        options.plot = true;                                                % plot the data
+        options.figure = 1;                                                 % to figure 1
+        options.subplot = [1,1,1];                                          % to subplot 1
         options.title = [];                                                 % no title
+        options.annotate = true;                                            % annotate the graph
         options.verbose = false;                                            % don't print info to screen
     else
         if ~isfield(options,'artefact')
-            options.artefact=true;
+            options.artefact = true;
         end
         if ~isfield(options,'filter')
-            options.filter=true;                                            % filter the EMG data using EMG_filter.m
+            options.filter = true;                                          % filter the EMG data using EMG_filter.m
         end
         if ~isfield(options,'padding')
-            options.padding=10;                                             % padding in samples at start and end of epoch - to exclude filtering effects
+            options.padding = 10;                                           % padding in samples at start and end of epoch - to exclude filtering effects
         end
         if ~isfield(options,'criterion')
             options.criterion = 1.96;                                       % use 1.96 standard deviations (across samples of the baseline) as the criterion
@@ -73,22 +75,25 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
             options.bootstrap = true;                                       % bootstrap the criterion for the minimum duration
         end
         if isnumeric(options.duration) & ~isempty(options.duration)
-        options.bootstrap = false;                                      % if a value for the duration is given, turn off the boostrap
+        options.bootstrap = false;                                          % if a value for the duration is given, turn off the boostrap
         end
         if ~isfield(options,'iterations')
             options.iterations = 1000;                                      % iterations in the bootstrap
         end                                             
         if ~isfield(options,'plot')
-            options.plot=true;                                              % plot the data
+            options.plot = true;                                            % plot the data
         end
         if ~isfield(options,'figure')
             options.figure = 1;                                             % to figure 1
         end
         if ~isfield(options,'subplot')
-           options.subplot=[1,1,1];                                         % to subplot 1
+           options.subplot = [1,1,1];                                       % to subplot 1
         end
         if ~isfield(options,'title')
-           options.title=[];                                                % no title
+           options.title = [];                                              % no title
+        end
+        if ~isfield(options,'annotate')
+           options.annotate = true;                                         % annotate the graph
         end
         if ~isfield(options,'verbose')
             options.verbose = false;                                        % don't print output
@@ -249,7 +254,11 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
     if options.plot
         xrange = [-stimtimems + (1000 ./ samplehz) : (1000 ./ samplehz) : (samples ./ (samplehz ./ 1000)) - stimtimems]'; % values for the x-axis
         figure(options.figure);
-        subplot(options.subplot(1),options.subplot(2),options.subplot(3));
+        if numel(options.subplot)==3
+            subplot(options.subplot(1),options.subplot(2),options.subplot(3));
+        elseif numel(options.subplot)==1
+            nexttile(options.subplot);                                      % for tiled layout graphs
+        end
         hold on;
         plot([0,0],[0,2],'k-');                                             % stimulus time
         plot([xrange(1),xrange(end)],[output.baseM(2),output.baseM(2)],'k-');% baseline
@@ -262,7 +271,9 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         Y=output.mean(:,2);
         Y(output.significant==0) = NaN;                                     % replace with NaN to allow discontinuous plotting
         plot(X,Y,'r-');                                                     % plot the significant data in red on top
-        text(50,0.1,['Criterion: ',int2str(output.criterion),' samples (',num2str(output.criterion ./ (samplehz ./ 1000),3),' ms) > baseline mean ± ',num2str(options.criterion,3),'SD'],'Color','r');% print the criterion for significance
+        if options.annotate
+            text(50,0.1,['Criterion: ',int2str(output.criterion),' samples (',num2str(output.criterion ./ (samplehz ./ 1000),3),' ms) > baseline mean ± ',num2str(options.criterion,3),'SD'],'Color','r');% print the criterion for significance
+        end
         xlabel('Time after stimulus, ms');                                  % x axis label
         ylabel('Relative EMG signal, A.U.');                                % y axis label
         title(options.title);                                               % add title to the graph
