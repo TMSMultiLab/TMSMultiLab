@@ -50,10 +50,10 @@ The raw data files below were compiled from 32 studies which reported a meta-ana
 
 <code>Chipchase_pmids.mat</code> - Matlab data structure containing the bibliographic details of all 681 articles.
 
-<code>Chipchase_item_reporting.png</code> - Mean and bootstrapped 95% confidence intervals for Reported (in red) and Controlled Items across all studies with individual Item-level reporting (from Chipchase_items.csv)
+<code>Chipchase_item_reporting.png</code> - Mean and bootstrapped 95% CIs for Reported (in red) and Controlled Items across all studies with individual Item-level reporting (from Chipchase_items.csv).
 
 <code>Chipchase_study_reporting.png</code> - Mean study-level Reported (red) and Controlled (blue) Items for all individual studies ordered by publication year (x-axis) in the top two panels, and for the mean (and 95% CI) of all studies grouped by year in the bottom two panels.
 
-<code>Chipchase_study_reporting_journals.png</code>
+<code>Chipchase_study_reporting_journals.png</code> - Mean study-level Reported Items for individual studies ordered by publication year (x-axis) and grouped by colour for different journals that the articles were published in. Solid lines give the best-fit regression for Reported over Year, dotted lines give the 95% CI for the fitted line.
 
-<code>Chipchase_study_reporting_journal_means.png</code>
+<code>Chipchase_study_reporting_journal_means.png</code> Mean and 95% CIs Reported Items over all years separately by journal (x-axis).
