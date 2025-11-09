@@ -7,7 +7,7 @@ The raw data files below were compiled from 32 studies which reported a meta-ana
 
 ## Raw data
 
-<code>Chipchase_items_raw.csv</code> This raw data file contains the following columns:
+<code>Chipchase_items_raw.csv</code> Raw data file containing the following columns:
 
 - META - Meta-analysis or systematic review article (one of 32)
 - PMID - PubMed ID of the included article (if available; if not: the DOI)
@@ -16,29 +16,29 @@ The raw data files below were compiled from 32 studies which reported a meta-ana
 - AgeR - The 'Age' item of the Chipchase questionnaire, Reported
 - AgeC - The 'Age' item of the Chipchase questionnaire, Controlled
 - ...UncC - the other 29 items of the Chipchase questionnaire, with Reported and Controlled for each
-- TOT
-- NUMR
-- NUMC
-- SUMR
-- SUMC
-- PERCR
-- PERCC
-- R1R
-- R1C
-- R2R
-- R2C
-- PERCAG
-- PERCCH
-- AC1
-- AC95U
-- AC95L
-- KAPPA
-- KAPU
-- KAPL
+- TOT - Total score, in percent, across Reported and Controlled
+- NUMR - Number of Items with Reported data
+- NUMC - Number of Items with Controlled data
+- SUMR - Sum of Items Reported
+- SUMC - Sum of Items Controlled
+- PERCR - Percentage of Items Reported
+- PERCC - Percentage of Items Controlled
+- R1R - Rater 1 rating of Reported
+- R1C - Rater 1 rating of Controlled
+- R2R - Rater 2 rating of Reported
+- R2C - Rater 2 rating of Controlled
+- PERCAG - Percentage agreement between raters
+- PERCCH - Percentage chance agreement
+- AC1 - Gwet's AC1 inter-rater reliability
+- AC95U - Gwet's AC1 upper 95% confidence limit
+- AC95L - Gwet's AC1 lower 95% confidence limit
+- KAPPA - Kappa inter-rater reliability
+- KAPU - Kappa upper 95% confidence limit
+- KAPL - Kappa lower 95% confidence limit
 
-<code>Chipchase_items_means.csv</code>
+<code>Chipchase_items_means.csv</code> - Raw data file containing the same data as the indidual Items above, but with only one row per meta-analysis or systematic review, and all data are the mean reporting rates across all included studies.
 
-<code>Chipchase_studies.csv</code>
+<code>Chipchase_studies.csv</code> - Raw data file containing the same data as the individual Items above, but with data in only one, two or three columns, giving the study mean Reported and/or Controlled score.
 
 
 ## Analysis
@@ -48,11 +48,11 @@ The raw data files below were compiled from 32 studies which reported a meta-ana
 
 ## Outputs
 
-<code>Chipchase_pmids.mat</code> - a matlab structure containing the bibliographic details of all 681 articles
+<code>Chipchase_pmids.mat</code> - Matlab data structure containing the bibliographic details of all 681 articles.
 
-<code>Chipchase_item_reporting.png</code>
+<code>Chipchase_item_reporting.png</code> - Mean and bootstrapped 95% confidence intervals for Reported (in red) and Controlled Items across all studies with individual Item-level reporting (from Chipchase_items.csv)
 
-<code>Chipchase_study_reporting.png</code>
+<code>Chipchase_study_reporting.png</code> - Mean study-level Reported (red) and Controlled (blue) Items for all individual studies ordered by publication year (x-axis) in the top two panels, and for the mean (and 95% CI) of all studies grouped by year in the bottom two panels.
 
 <code>Chipchase_study_reporting_journals.png</code>
 
