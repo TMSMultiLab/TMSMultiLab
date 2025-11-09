@@ -45,6 +45,12 @@ The raw data files below were compiled from 32 studies which reported a meta-ana
 
 <code>Chipchase_reporting.m</code> - the analysis file loads the data, removes duplicates, downloads meta-data from PubMed, analyses and plots graphs to illustrate the data.
 
+This code calls two other functions from the [Metaanalysis](https://github.com/TMSMultiLab/TMSMultiLab/tree/main/Metaanalysis) folder in the repository:
+
+<code>[PubMedGet.m](https://github.com/TMSMultiLab/TMSMultiLab/blob/main/Metaanalysis/PubMedGet.m)</code> - retrieve a record from the PubMed database (and pause several seconds to prevent overspamming of PubMed).
+
+<code>[PubMedParse.m](https://github.com/TMSMultiLab/TMSMultiLab/blob/main/Metaanalysis/PubMedParse.m)</code> - parse the PubMed XML record into a Matlab structure.
+
 
 ## Outputs
 
