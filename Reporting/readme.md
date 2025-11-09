@@ -1,6 +1,6 @@
 # Analysis of 32 meta-analyses which assessed reporting in TMS studies
 
-This dataset and analysis is part of the TMS-RAT project. It forms the 'scoping review' of that work. Overall, the project is up-dating and significantly expanding the TMS reporting methods checklist of [Chipchase et l. 2012](https://doi.org/10.1016/j.clinph.2012.05.003).
+This dataset and analysis is part of the TMS-RAT project. It forms the 'scoping review' of that work. Overall, the project is up-dating and significantly expanding the TMS reporting methods checklist of [Chipchase et al. 2012](https://doi.org/10.1016/j.clinph.2012.05.003).
 
 The raw data files below were compiled from 32 studies which reported a meta-analysis of TMS studies, and reported 4 or more reporting checklist scores. A total of 681 studies were rated by the 32 individual reports. The individual study and rating data was extracted from the 32 studies by two independent raters (the first rater did all 32 studies), and discrepancies were resolved by the first rater.
 
