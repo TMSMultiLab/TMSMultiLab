@@ -7,7 +7,34 @@ The raw data files below were compiled from 32 studies which reported a meta-ana
 
 ## Raw data
 
-<code>Chipchase_items_raw.csv</code>
+<code>Chipchase_items_raw.csv</code> This raw data file contains the following columns:
+
+- META - Meta-analysis or systematic review article (one of 32)
+- PMID - PubMed ID of the included article (if available; if not: the DOI)
+- AUTHOR - First author of the original, individual study
+- YEAR - Year of publication, from PubMed data
+- AgeR - The 'Age' item of the Chipchase questionnaire, Reported
+- AgeC - The 'Age' item of the Chipchase questionnaire, Controlled
+- ...UncC - the other 29 items of the Chipchase questionnaire, with Reported and Controlled for each
+- TOT
+- NUMR
+- NUMC
+- SUMR
+- SUMC
+- PERCR
+- PERCC
+- R1R
+- R1C
+- R2R
+- R2C
+- PERCAG
+- PERCCH
+- AC1
+- AC95U
+- AC95L
+- KAPPA
+- KAPU
+- KAPL
 
 <code>Chipchase_items_means.csv</code>
 
