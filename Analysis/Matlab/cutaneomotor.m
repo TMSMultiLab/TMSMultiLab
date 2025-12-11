@@ -107,7 +107,7 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
     end
 
     %% PROCESS THE INPUTS________________________________________________
-    stimtimems= stimtime .* 1000;                                           % convert stimtime in s to stimtime in ms (all times now in ms)
+    stimtimems = stimtime .* 1000;                                          % convert stimtime in s to stimtime in ms (all times now in ms)
     stimtimes = round(stimtimems .* (samplehz ./ 1000));                    % convert stimtime in ms to stimtime in samples
     if stimtimes > size(data,1)
         error('output=cutaneomotor(data,samplehz,stimtime [,options]) - stimtime is later than the last sample');
@@ -133,16 +133,16 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         disp(['Processing ',int2str(reps),' sweeps...']);
     end
     for n = 1:reps
-        if mod(n,100)==0 && options.verbose
+        if mod(n,100) == 0 && options.verbose
             disp([' n=',int2str(n),'...']);                                 % progress on screen
         end
         % remove stimulus artefact & filter the data_______________________
         if options.artefact
-            spike=spike_artefact(data(:,n),samplehz,stimtime);              % remove spike artefact with default options
+            spike = spike_artefact(data(:,n),samplehz,stimtime);            % remove spike artefact with default options
             if options.filter
-                output.cleaned(:,n,1)=spike.filtered;                       % the filtered data after spike removal
+                output.cleaned(:,n,1) = spike.filtered;                     % the filtered data after spike removal
             else
-                output.cleaned(:,n,1)=spike.recovered;                      % the raw data after spike removal
+                output.cleaned(:,n,1) = spike.recovered;                    % the raw data after spike removal
             end
         end
         
@@ -160,9 +160,9 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         if options.verbose
             disp(['Bootstrapping the baselines, ',int2str(options.iterations),' iterations...']);
         end
-        output.sequences=[];                                                % empty variable for the significant sequences
+        output.sequences = [];                                              % empty variable for the significant sequences
         for n = 1:options.iterations
-            if mod(n,100)==0 && options.verbose
+            if mod(n,100) == 0 && options.verbose
                 disp([' i=',int2str(n),'...']);                             % progress on screen
             end
             bootstrap.reps = ceil(rand(reps,1) .* reps);                    % which repetitions to sample from output.cleaned
@@ -174,16 +174,21 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
             bootstrap.significant = bootstrap.mean < bootstrap.critical(1) | bootstrap.mean > bootstrap.critical(2);% which timepoints are significant?
             bootstrap.onsets = 1+find(diff(bootstrap.significant)==1);      % when does a non-significant timepoint become signifant?
             bootstrap.offsets = 1+find(diff(bootstrap.significant)==-1);    % when does a significant timepoint become non-signifant?
-            if bootstrap.offsets(1) < bootstrap.onsets(1)
-                bootstrap.onsets=[1;bootstrap.onsets];                      % add an onset before the first timepoint
+	    
+            if ~isempty(bootstrap.offsets) & ~isempty(bootstrap.onsets) & bootstrap.offsets(1) < bootstrap.onsets(1)
+                bootstrap.onsets = [1;bootstrap.onsets];                    % add an onset before the first timepoint
             end
             if numel(bootstrap.onsets) > numel(bootstrap.offsets)
                 bootstrap.offsets = [bootstrap.offsets;numel(bootstrap.significant)+1]; % add a final offset after the last timepoint
             end
             output.sequences = [output.sequences;bootstrap.offsets - bootstrap.onsets];% append the new list of significant sequences
         end
-        output.sequences = sortrows(output.sequences);                      % sort the 'significant' sequences by length
-        output.criterion = output.sequences(round(numel(output.sequences).*0.99));% Criterion = 99th percentile of randomised sequence lengths
+	if ~isempty(output.sequences)
+            output.sequences = sortrows(output.sequences);                  % sort the 'significant' sequences by length
+            output.criterion = output.sequences(round(numel(output.sequences).*0.99));% Criterion = 99th percentile of randomised sequence lengths
+	else
+	    output.criterion = size(data,1) - samplehz.*stimtime;           % set criterion to max possible post-stimulus
+	end
     else
         output.criterion = options.durations;                               % use the requested sequence length
     end
@@ -201,10 +206,10 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
     output.significant = nan(size(output.mean,1),1);                        % for storing significant samples
     n=2; % do this for the relative data only (change later?)
     output.significant = output.mean(:,n) < critical(n,1) | output.mean(:,n) > critical(n,2);% which timepoints are initially above the sequence-creation threshold?
-    onsets = 1+find(diff(output.significant)==1);                           % when does a non-significant timepoint become signifant?
-    offsets = 1+find(diff(output.significant)==-1);                         % when does a significant timepoint become non-signifant?
+    onsets = 1+find(diff(output.significant) == 1);                         % when does a non-significant timepoint become signifant?
+    offsets = 1+find(diff(output.significant) == -1);                       % when does a significant timepoint become non-signifant?
     if offsets(1) < onsets(1)                                               % if the first offset is before the first onset
-        onsets=[1;onsets];                                                  % add an onset before the first timepoint
+        onsets = [1;onsets];                                                % add an onset before the first timepoint
     end
     if numel(onsets) > numel(offsets)                                       % if there are more onsets than offsets
         offsets = [offsets;numel(output.significant)+1];                    % add a final offset after the last timepoint
@@ -222,41 +227,43 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
             output.significant(onsets(m):o) = 0;                            % remove this significant sequence
         end
     end
-    output.significant=logical(output.significant);                         % convert back to a logical index
+    output.significant = logical(output.significant);                       % convert back to a logical index
     
     %% DESCRIBE THE SIGNIFICANT PERIODS FOUND____________________________
-    output.onsets = 1+find(diff(output.significant)==1);                    % when does a non-significant timepoint become signifant?
-    output.offsets = 1+find(diff(output.significant)==-1);                  % when does a significant timepoint become non-signifant?
-    if output.offsets(1) < output.onsets(1)                                 % if the first offset is before the first onset
-        output.onsets=[1;output.onsets];                                    % add an onset before the first timepoint
-    end
-    if numel(output.onsets) > numel(output.offsets)                         % if there are more onsets than offsets
-        output.offsets = [output.offsets;size(output.significant,1)+1];     % add a final offset after the last timepoint
-    end
-    output.segments = struct('direction',[],'onset',[],'offset',[],'peak',[],'mean',cell(numel(output.onsets),1));% cell array with one per period each containing a structure with elements
-    for n = 1:numel(output.onsets)
-        if output.mean(output.onsets(n),2) > 1
-            output.segments(n).direction = 'increase';                      % increased EMG signal
-        else
-            output.segments(n).direction = 'decrease';                      % decreased EMG signal
+    output.onsets = 1+find(diff(output.significant)==1);                    % when does a non-significant timepoint become significant?
+    output.offsets = 1+find(diff(output.significant)==-1);                  % when does a significant timepoint become non-significant?
+    if numel(output.onsets)>0
+        if output.offsets(1) < output.onsets(1)                             % if the first offset is before the first onset
+            output.onsets = [1;output.onsets];                              % add an onset before the first timepoint
         end
-        output.segments(n).onset = (output.onsets(n) - stimtimes) ./ (samplehz ./ 1000);% onset of significant sequence in ms
-        output.segments(n).offset = (output.offsets(n) - stimtimes) ./ (samplehz ./ 1000);% offset of significant sequence in ms
-        if output.segments(n).direction == 'increase'
-            output.segments(n).peak=max(output.mean(output.onsets(n):output.offsets(n),2));% peak change peak change (max for increases, min for decreases)
-        else
-            output.segments(n).peak=min(output.mean(output.onsets(n):output.offsets(n),2));% peak change peak change (max for increases, min for decreases)
+        if numel(output.onsets) > numel(output.offsets)                     % if there are more onsets than offsets
+            output.offsets = [output.offsets;size(output.significant,1)+1]; % add a final offset after the last timepoint
         end
-        output.segments(n).mean=mean(output.mean(output.onsets(n):output.offsets(n),2));% average change (mean between onset and offset)
+        output.segments = struct('direction',[],'onset',[],'offset',[],'peak',[],'mean',cell(numel(output.onsets),1));% cell array with one per period each containing a structure with elements
+        for n = 1:numel(output.onsets)
+            if output.mean(output.onsets(n),2) > 1
+                output.segments(n).direction = 'increase';                  % increased EMG signal
+            else
+                output.segments(n).direction = 'decrease';                  % decreased EMG signal
+            end
+            output.segments(n).onset = (output.onsets(n) - stimtimes) ./ (samplehz ./ 1000);% onset of significant sequence in ms
+            output.segments(n).offset = (output.offsets(n) - stimtimes) ./ (samplehz ./ 1000);% offset of significant sequence in ms
+            if output.segments(n).direction == 'increase'
+                output.segments(n).peak = max(output.mean(output.onsets(n):output.offsets(n),2));% peak change peak change (max for increases, min for decreases)
+            else
+                output.segments(n).peak = min(output.mean(output.onsets(n):output.offsets(n),2));% peak change peak change (max for increases, min for decreases)
+            end
+            output.segments(n).mean = mean(output.mean(output.onsets(n):output.offsets(n),2));% average change (mean between onset and offset)
+        end
     end
     
     %% PLOT THE DATA_____________________________________________________
     if options.plot
         xrange = [-stimtimems + (1000 ./ samplehz) : (1000 ./ samplehz) : (samples ./ (samplehz ./ 1000)) - stimtimems]'; % values for the x-axis
         figure(options.figure);
-        if numel(options.subplot)==3
+        if numel(options.subplot) == 3
             subplot(options.subplot(1),options.subplot(2),options.subplot(3));
-        elseif numel(options.subplot)==1
+        elseif numel(options.subplot) == 1
             nexttile(options.subplot);                                      % for tiled layout graphs
         end
         hold on;
