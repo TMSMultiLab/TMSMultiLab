@@ -115,8 +115,8 @@ for p=1:numel(SEP_labels)-1
 	    X=log10(SEP.AGE(idx));
 	    xticks(log10([0.1,1,5,10,20,40,100]));
 	    xticklabels({'0.1','1','5','10','20','40','100'});
-	    titletext=[titletext,'log age'];
-	end
+	    titletext=[titletext,'log_{10} age'];
+        end
 	Y=SEP.Latency(idx);
         plot(X,Y,[plotcol,'o']);
     
@@ -129,8 +129,13 @@ for p=1:numel(SEP_labels)-1
         plot(xpred,ci(:,2),[plotcol,'--']);
 	
 	a=axis;
-	text(mean(a(1:2)),a(3)+(a(4)-a(3))./10,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcol,'FontSize',12);
-	title(titletext,'Color',plotcol,'FontSize',10);	
+	text(mean(a(1:2)),a(3)+(a(4)-a(3))./12,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcol,'FontSize',8);
+	if mod(s,2)==1
+	    text(mean(a(1:2)),a(3)+(a(4)-a(3))./6,1,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x + ',num2str(mdl.Coefficients.Estimate(1),3)],'Color',plotcol,'FontSize',8);
+	else
+	    text(mean(a(1:2)),a(3)+(a(4)-a(3))./6,1,['y=',num2str(mdl.Coefficients.Estimate(2),3),'log_{10}(x) + ',num2str(mdl.Coefficients.Estimate(1),3)],'Color',plotcol,'FontSize',8);
+	end
+	title(titletext,'Color',plotcol,'FontSize',10);
 	    
     end   
     print(['data/allison-t_1983-',SEP_labels{p}],'-dpng');

@@ -3,7 +3,7 @@
 % inputs required:
 % data (nx1 array)
 % sample frequency in hz (samples per second)
-% stimulation time (in ms)
+% stimulation time (in seconds)
 %   options.artefactwindow [ms,ms], if omitted, uses 0-2ms; this is the non-recoverable spike, and is removed completely
 %   options.recovery time (ms), if omitted, uses 20ms
 %   options.scale (proportion), multiply the post-artefact fit by this number; if omitted = 1
