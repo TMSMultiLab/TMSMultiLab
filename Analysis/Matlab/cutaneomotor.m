@@ -9,6 +9,7 @@
 %   options.filter = true              filter the data; default = true. can only be applied if options.artefact is true
 %   options.padding = 10;              padding in samples at start and end of epoch - to exclude filtering effects
 %   options.criterion = 1.96           criterion for onset/offset of a change from baseline; defaults to 1.96 standard deviations from the baseline mean across samples
+%   options.significance = 0.99        value for the pth percentile of bootstrapped sequences
 %   options.latency = [20,250]         minimum time in ms after the stimulus that cutaneomotor reflexes could occur - e.g., the H-reflex latency
 %   options.duration = []              minimum duration for a significant epoch, in ms; if specified, then bootstrap is not used
 %   options.bootstrap = true;          bootstrap the criterion for the minimum duration of a significant sequence?
@@ -17,7 +18,7 @@
 %   options.figure = 1                 which figure to plot to
 %   options.subplot = [1,1,1]          which subplot to plot to (or tile if a single number)
 %   options.title = [];                title for the figure
-%   options.annotate = true           annotate the graph
+%   options.annotate = true            annotate the graph
 %   options.verbose = false            print info to screen
 %
 %   Version 1.0
@@ -41,6 +42,7 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         options.filter = true;                                              % filter the EMG data using EMG_filter.m
         options.padding = 10;                                               % padding in samples at start and end of epoch - to exclude filtering effects
         options.criterion = 1.96;                                           % use 1.96 standard deviations (across samples of the baseline) as the criterion for creating sequences
+	options.significance = 0.99                                         % pth percentile of bootstrapped sequences to accept as 'significant'
         options.latency = [20,250];                                         % range of times after stimulus to search for changes in EMG signals    
         options.duration = [];                                              % minimum duration for a significant sequence, in ms (if bootstrapping not used); empty = use bootstrap
         options.bootstrap = true;                                           % bootstrap the criterion for the minimum duration
@@ -63,6 +65,9 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         end
         if ~isfield(options,'criterion')
             options.criterion = 1.96;                                       % use 1.96 standard deviations (across samples of the baseline) as the criterion
+        end
+        if ~isfield(options,'significance')
+            options.significance = 0.99;                                    % use 99th percentile as cut-off for significant sequences
         end
         if ~isfield(options,'latency')
             options.latency = [20,250];                                     % range of times after stimulus to search for changes in EMG signals
@@ -185,7 +190,7 @@ function [output, options, bootstrap] = cutaneomotor(data, samplehz, stimtime, o
         end
 	if ~isempty(output.sequences)
             output.sequences = sortrows(output.sequences);                  % sort the 'significant' sequences by length
-            output.criterion = output.sequences(round(numel(output.sequences).*0.99));% Criterion = 99th percentile of randomised sequence lengths
+            output.criterion = output.sequences(round(numel(output.sequences).*options.significance));% Criterion = pth percentile of randomised sequence lengths
 	else
 	    output.criterion = size(data,1) - samplehz.*stimtime;           % set criterion to max possible post-stimulus
 	end
