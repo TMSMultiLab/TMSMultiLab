@@ -290,6 +290,7 @@ set(gcf,'Position',[1,50,1200,600]);
 print('Chipchase_study_reporting_journals.png','-dpng');
 close(3);
 
+
 %% REPEAT FOR MEANS OF TOP 25 JOURNALS______________________________________
 figure(4);
 hold on;
@@ -310,3 +311,46 @@ ylabel('Proportion criteria met');
 set(gcf,'Position',[1,50,1200,600]);
 print('Chipchase_study_reporting_journal_means.png','-dpng');
 close(4);
+
+
+%% COMPARE CLINICAL NEUROPHYSIOLOGY WITH OTHERS_____________________________
+% top k journals, with 10 or more papers (1 = Clin Neurophysiol, which published the Chipchase questionnaire)
+k = 10;
+M = cell2mat(journals_unique(jix(1:k,1),3));                                % means
+S = cell2mat(journals_unique(jix(1:k,1),4));                                % SDs
+N = cell2mat(journals_unique(jix(1:k,1),2));                                % Ns
+V = (N-1).*S.^2;
+
+% comparisons with most popular Journal (#1)
+x = 1;                                                                      % comparison = Clin Neurophysiol
+y = [2:k];
+diff = M(x) - M(y);                                                         % difference from x
+Sp = sqrt((V(x) + V(y)) ./ (N(x) + N(y) - 2));                              % pooled SD with x
+T = diff ./ (Sp .* sqrt((1./N(x)) + (1./N(y))));                            % unpaired T-test with x
+p = 2.*(1-tcdf(abs(T),N(y)-1));                                             % two-tailed p-value with x
+
+% comparisons with best-reportin Journal (#3)
+x = 3;                                                                      % comparison = Brain stimulation
+y = [1:2,4:k];
+diff = M(x) - M(y);                                                         % difference from x
+Sp = sqrt((V(x) + V(y)) ./ (N(x) + N(y) - 2));                              % pooled SD with x
+T = diff ./ (Sp .* sqrt((1./N(x)) + (1./N(y))));                            % unpaired T-test with x
+p = 2.* (1-(tcdf(abs(T),N(1) + N(y)-2)));                                   % two-tailed p-value with x
+
+
+%% COMPARE CLINICAL NEUROPHYSIOLOGY WITH PRE-CHIPCHASE REPOTING_____________
+CN = find(journals=="Clin Neurophysiol");
+pre = d(CN,3)>=2007 & d(CN,3)<2012;                                         % pre = 2007 - 2011, 5 years = 12 papers
+post = d(CN,3)>=2013;                                                       % post = 2013 - max = 2017, 5 years = 15 papers
+M1 = mean(d(CN(pre),1));
+M2 = mean(d(CN(post),1));
+S1 = std(d(CN(pre),1));
+S2 = std(d(CN(post),1));
+N1 = sum(pre);
+N2 = sum(post);
+
+% unpaired t-test pre vs post publication of the Chipchase (2012) checklist
+diff = M2 - M1;
+Sp = sqrt((((N1-1).*S1.^2) + ((N2-1).*S2.^2)) ./ (N1 + N2 - 2));
+T = diff ./ (Sp.*sqrt( (1./N1) + (1./N2)));
+p = 2.* (1-(tcdf(abs(T),N1+N2-2)));
