@@ -68,9 +68,14 @@ labels.DA=[-2,-0.5];
 labels.DM=[-3.5,-0.5];
 labels.PM=[-3,1.5];
 
-% 'hand' (black)
+% 'hand' and 'foot' (black)
 colours.Hand=[0,0,0];
 labels.Hand=[-6,-2];
+
+colours.FHB = [0,0,0];
+colours.EDB = [0,0,0];
+labels.FHB=[-1.5,-2.5];
+labels.EDB=[1.5,-2.5];
 
 %% read the TMSSites table dumped from LabMan mysql database (participant database used by The Hand Lab)
 sites=readtable('data/HandLab_TMSSites.csv');
@@ -258,7 +263,7 @@ for f=1:2
                         text(label(1)./36,label(2)./36,[ms{m},' (',int2str(sum(idx)),')'],'Color',colour,'FontSize',12);
                     end
                 end
-                disp(['  Mean=(',num2str(M.lat,3),',',num2str(M.ant,3),')']);FDI
+                disp(['  Mean=(',num2str(M.lat,3),',',num2str(M.ant,3),')']);
             end
         end
     end
@@ -289,7 +294,6 @@ for f=1:2
             ylabel('In front of vertex, relative');
             print('data/HandLab_TMSSites_M1_relative.png','-dpng');
     end
-
 end
 
 %% CORRELATIONS BETWEEN BIOMETRICS AND SITES_____________________________
@@ -348,7 +352,7 @@ jitter = rand(sum(idx),1)./2 - 0.25;
 Y = sitestats(:,thr);                                                       % RMT threshold
 plot(X(idx)+jitter,Y(idx),'k+');
 xlabel('Ear-to-Ear, cm');
-ylabel('M1-FDI distance from vertex, cm');
+ylabel('M1-FDI threshold, %MSO');
 
 X = sitestats(:,ne);                                                        % mean circumference distance of participant
 idx = sitestats(:,2) == 8;                                                  % FDI = 8
@@ -356,6 +360,6 @@ jitter = rand(sum(idx),1)./2 - 0.25;
 Y = sitestats(:,thr);                                                       % RMT threshold
 plot(X(idx)+jitter,Y(idx),'k+');
 xlabel('Head circumference, cm');
-ylabel('M1-FDI distance from vertex, cm');
+ylabel('M1-FDI threshold, %MSO');
 
 clear ans colour f h hem idx m n p start stat;
