@@ -103,11 +103,11 @@ for q = 1:items
         n = sum(ix);                                                        % total studies assessed
         t = sum(table2array(items_raw(ix,s)));                              % total studies meeting the criterion
 
-	% items from items_means table
-	s = (q-1).*2+r+4;                                                   % column where the data is
-	m = isfinite(table2array(items_means(:,s)));                        % which additional meta-analyses to add?
-	n2 = nansum(table2array(items_means(m,4)));                         % total N in these meta-analyses
-	t2 = nansum(round((table2array(items_means(m,4)).*table2array(items_means(m,s)))/100));% total studies meeting the criterion
+	    % items from items_means table
+	    s = (q-1).*2+r+4;                                                   % column where the data is
+	    m = isfinite(table2array(items_means(:,s)));                        % which additional meta-analyses to add?
+	    n2 = nansum(table2array(items_means(m,4)));                         % total N in these meta-analyses
+	    t2 = nansum(round((table2array(items_means(m,4)).*table2array(items_means(m,s)))/100));% total studies meeting the criterion
 	
         % bootstrap a 95% CI
         sample = [ones(round(t+t2),1);zeros(round(n+n2-t-t2),1)];           % put all the zeros and ones together
@@ -197,29 +197,35 @@ ix(:,2) = isfinite(d(:,2));                                                % val
 xpred = linspace(min(d(:,3)),max(d(:,3)))';                                % 100 equally spaced points across min to max years
 
 %% PLOT THE DATA__________________________________________________________
-figure(2);
 for r = 1:2
+    figure(r+1);
     % plot raw data and regression fit
-    subplot(2,2,r);
+    subplot(2,1,1);
     hold on;
     plot([2012,2012],[0,1],'-','Color',[0.6,0.6,0.6],'LineWidth',1);
     plot(d(ix(:,r),3),d(ix(:,r),r),[plotcols{r},'o'],'MarkerFaceColor',plotcols{r},'MarkerSize',3);
 
     % fit linear model
     mdl = fitlm(d(ix(:,r),3),d(ix(:,r),r));
+    correl = corrcoef(d(ix(:,r),3),d(ix(:,r),r));                           % correlation between x and y
     [ypred,ci] = predict(mdl,xpred);
+    if mdl.Coefficients.Estimate(1)<0                                       % get constant sign
+        sign_lbl=' ';
+    else
+        sign_lbl='+';
+    end
     plot(xpred,ypred,[plotcols{r},'-'],'Linewidth',2);
     plot(xpred,ci(:,1),[plotcols{r},'--']);
     plot(xpred,ci(:,2),[plotcols{r},'--']);
-    
-    text(1986,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcols{r},'FontSize',16);
+    text(1986,1,['r(',int2str(sum(ix(:,r))-2),') = ',num2str(correl(1,2))],'Color',plotcols{r},'FontSize',16);
+    text(1986,0.05,['rating = ',num2str(mdl.Coefficients.Estimate(2),3),' (',num2str(mdl.Coefficients.SE(2),3),') years ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3)],'Color',plotcols{r},'FontSize',16);% add the equation to the plot
     axis([1985,2025,0,1]);
     set(gca,'FontSize',20);
     
     % plot means
-    subplot(2,2,r+2);
+    subplot(2,1,2);
     hold on;
-    plot([2012,2012],[0,1],'-','Color',[0.6,0.6,0.6],'LineWidth',1);   
+    plot([2012,2012],[0,1],'-','Color',[0.6,0.6,0.6],'LineWidth',2);   
     for y = 1985:2025
         yx = logical(ix(:,r).*d(:,3)>=y & ix(:,r).*d(:,3)<y+1);             % index to studies in this year
         N = sum(yx);
@@ -234,21 +240,18 @@ for r = 1:2
     end
     axis([1985,2025,0,1]);
     set(gca,'FontSize',20);
+    subplot(2,1,1);
+    ylabel('Proportion criteria met');
+    xlabel('Year');
+    %title('Reported');
+    %title('Controlled');
+    subplot(2,1,2);
+    xlabel('Year');
+    ylabel('Proportion criteria met');
+    set(gcf,'Position',[1,50,1200,600]);
+    print(['Chipchase_study_reporting_',int2str(r),'.png'],'-dpng');
+    %close(r+1);
 end
-subplot(2,2,1);
-ylabel('Proportion criteria met');
-title('Reported');
-subplot(2,2,2);
-title('Controlled');
-subplot(2,2,3);
-xlabel('Year');
-ylabel('Proportion criteria met');
-subplot(2,2,4);
-xlabel('Year');
-set(gcf,'Position',[1,50,1200,600]);
-print('Chipchase_study_reporting.png','-dpng');
-close(2);
-
 
 %% REPEAT, THIS TIME FOR DIFFERENT JOURNALS_______________________________
 %% find a journal name

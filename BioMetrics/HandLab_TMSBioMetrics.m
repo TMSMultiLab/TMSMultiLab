@@ -53,24 +53,24 @@ end
 %% get indices of useful numbers
 age=2;
 ni=7;
-idx_ni=isfinite(headstats(:,ni));                                                     % Nasion-Inion
+idx_ni=isfinite(headstats(:,ni));                                           % Nasion-Inion
 ee=12;
-idx_ee=isfinite(headstats(:,ee));                                                     % Ear-to-Ear
+idx_ee=isfinite(headstats(:,ee));                                           % Ear-to-Ear
 nei=17;
-idx_nei=isfinite(headstats(:,nei));                                                   % Circumference
+idx_nei=isfinite(headstats(:,nei));                                         % Circumference
 vol = 52;
 headstats(:,vol) = (headstats(:,ni)./pi).*(headstats(:,ee)./pi).*(nanmean(headstats(:,[ni,ee]),2)./pi).*pi.*(2./3000);% estimate half-volume of head, in litres = a*b*c*pi*4/3, where a,b,c, are the three radii
 idx_vol=isfinite(headstats(:,vol));
 arm=22;
 par=32;
-idx_par=isfinite(headstats(:,par));                                                   % arm length (participant value)
+idx_par=isfinite(headstats(:,par));                                         % arm length (participant value)
 spa=37;
-idx_spa=isfinite(headstats(:,spa));                                                   % arm span (participant value)
+idx_spa=isfinite(headstats(:,spa));                                         % arm span (participant value)
 hei=42;
-idx_hei=isfinite(headstats(:,hei));                                                   % height
+idx_hei=isfinite(headstats(:,hei));                                         % height
 wei=47;
-idx_wei=isfinite(headstats(:,wei));                                                   % weight
-jitter=(rand(size(headstats,1),1)-0.5)./3;                                            % jitter up to 0.16 (cm, L, kg) either way
+idx_wei=isfinite(headstats(:,wei));                                         % weight
+jitter=(rand(size(headstats,1),1)-0.5)./3;                                  % jitter up to 0.16 (cm, L, kg) either way
 
 % histograms of BioMetrics
 limits = [5,10,20:20:100,125:25:250,300:50:500];
@@ -85,7 +85,8 @@ b = limits(find(limits>a(4),1)); % first limit-point above current axis (to stan
 axis([a(1),a(2),0,b]);
 a=axis;
 xlabel('Nasion - Inion, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
 
 subplot(2,4,2);
 histogram(headstats(:,ee),20);
@@ -94,8 +95,9 @@ N = sum(isfinite(headstats(:,ee)));
 b = limits(find(limits>a(4),1)); % first limit-point above current axis (to standardise y-axes)
 axis([a(1),a(2),0,b]);
 a=axis;
-xlabel('Between Pre-auricular points, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+xlabel('Inter-auricular, cm');
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
 
 subplot(2,4,3);
 histogram(headstats(:,nei),20);
@@ -105,7 +107,8 @@ b = limits(find(limits>a(4),1)); % first limit-point above current axis (to stan
 axis([a(1),a(2),0,b]);
 a=axis;
 xlabel('Head circumference, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
 
 %subplot(2,4,4);
 % histogram(headstats(:,nei),20); - M1-hand location
@@ -115,7 +118,7 @@ text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
 %axis([a(1),a(2),0,b]);
 %a=axis;
 %xlabel('M1-hand lateral, cm');
-%text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+%text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
 
 subplot(2,4,5);
 histogram(headstats(:,hei),20);
@@ -125,7 +128,8 @@ b = limits(find(limits>a(4),1)); % first limit-point above current axis (to stan
 axis([a(1),a(2),0,b]);
 a=axis;
 xlabel('Height, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
 
 subplot(2,4,6);
 histogram(headstats(:,wei),20);
@@ -135,7 +139,9 @@ b = limits(find(limits>a(4),1)); % first limit-point above current axis (to stan
 axis([a(1),a(2),0,b]);
 a=axis;
 xlabel('Weight, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
+set(gca,'FontSize',20);
 
 subplot(2,4,7);
 histogram(headstats(:,par),20);
@@ -145,7 +151,8 @@ b = limits(find(limits>a(4),1)); % first limit-point above current axis (to stan
 axis([a(1),a(2),0,b]);
 a=axis;
 xlabel('Arm length, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
 
 subplot(2,4,8);
 histogram(headstats(:,spa),20);
@@ -155,45 +162,48 @@ b = limits(find(limits>a(4),1)); % first limit-point above current axis (to stan
 axis([a(1),a(2),0,b]);
 a=axis;
 xlabel('Arm span, cm');
-text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)]);
+text(a(1) + (a(2)-a(1))/20,b.*.95,['N = ',int2str(N)],'FontSize',20);
+set(gca,'FontSize',20);
 
-set(gcf,'Position',[0,0,1600,800]);
+set(gcf,'Position',[1,1,1920,900]);
 print('data/HandLab_TMSBioMetrics_Distributions.png','-dpng');
 close(1);
+
 
 %% correlations between main measures__________________________________________________
 indices = [ ni,  ee;  ni, nei;  ee, nei; hei,vol;  hei, wei; hei,par;  hei,spa;];% pairs for correlation analyses
 units =  { 'cm','cm';'cm','cm';'cm','cm';'cm','L';'cm','kg';'cm','cm';'cm','cm';};
 subplots = [      1,        2,        3,       4,        5,        6,        7];
-lbls = {'Nasion - Inion','Between Pre-auricular points';'Nasion - Inion','Circumference';'Between Pre-auricular points','Circumference';'Height','Head volume';'Height','Weight';'Height','Arm length';'Height', 'Arm span'};
+lbls = {'Nasion - Inion','Inter-auricular';'Nasion - Inion','Circumference';'Inter-auricular','Circumference';'Height','Head volume';'Height','Weight';'Height','Arm length';'Height', 'Arm span'};
 idxs = {logical(idx_ni.*idx_ee);logical(idx_ni.*idx_nei);logical(idx_ee.*idx_nei);logical(idx_hei.*idx_vol);logical(idx_hei.*idx_wei);logical(idx_hei.*idx_par);logical(idx_hei.*idx_spa)};
 
 figure(1);
-for s = subplots                                                                       % for each subplot
-    subplot(2,4,s);                                                                    % where to plot it
+for s = subplots                                                            % for each subplot
+    subplot(2,4,s);                                                         % where to plot it
     hold on;
     plot(headstats(:,indices(s,1))+jitter(randperm(size(jitter,1))),headstats(:,indices(s,2))+jitter(randperm(size(jitter,1))),'k+'); % plot the data
-    mdl=fitlm(headstats(:,indices(s,1)),headstats(:,indices(s,2)));                    % fit linear model
+    mdl=fitlm(headstats(:,indices(s,1)),headstats(:,indices(s,2)));         % fit linear model
     [ypred,ci]=predict(mdl,linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))');% get the predicted data and CIs
     plot(linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))',ypred,'r-');% plot the regression line
     plot(linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))',ci(:,1),'r--');% plot the upper CI
     plot(linspace(nanmin(headstats(:,indices(s,1))),nanmax(headstats(:,indices(s,1))))',ci(:,2),'r--');% plot the lower CI
-    xlabel([lbls{s,1},', ',units{s,1}]);                                               % x-axis label
-    ylabel([lbls{s,2},', ',units{s,2}]);                                               % y-axis label
-    r=corrcoef(headstats(idxs{s},indices(s,1)),headstats(idxs{s},indices(s,2)));       % correlation between x and y
-    a = axis;                                                                          % get current axis limits
-    text(a(1)+(a(2)-a(1))/20,a(4)-(a(4)-a(3))/40,['r(',int2str(sum(idxs{s})-2),')=',num2str(r(1,2),3)]);% add the r-value to the plot
-    if mdl.Coefficients.Estimate(1)<0                                                  % get constant sign
+    xlabel([lbls{s,1},', ',units{s,1}]);                                    % x-axis label
+    ylabel([lbls{s,2},', ',units{s,2}]);                                    % y-axis label
+    r=corrcoef(headstats(idxs{s},indices(s,1)),headstats(idxs{s},indices(s,2)));% correlation between x and y
+    a = axis;                                                               % get current axis limits
+    text(a(1)+(a(2)-a(1))/20,a(4)-(a(4)-a(3))/40,['r(',int2str(sum(idxs{s})-2),')=',num2str(r(1,2),3)],'FontSize',16);% add the r-value to the plot
+    if mdl.Coefficients.Estimate(1)<0                                       % get constant sign
         sign_lbl=' ';
     else
         sign_lbl='+';
     end
-    text(a(1)+(a(2)-a(1))/20,a(4)-(a(4)-a(3))/10,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' ',units{s,2}]);% add the equation to the plot
-    axis(a);                                                                           % set the axis back to where it was
+    text(a(1)+(a(2)-a(1))/20,a(4)-(a(4)-a(3))/9,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3),' ',units{s,2}],'FontSize',16);% add the equation to the plot
+    axis(a);                                                                % set the axis back to where it was
+    set(gca,'FontSize',18);
 end
-set(gcf,'Position',[0,0,1600,800]);                                                    % make figure big
-print('data/HandLab_TMSBioMetrics_Correlations.png','-dpng');                          % print figure
-close(1);                                                                              % close figure
+set(gcf,'Position',[1,1,1920,900]);                                         % make figure big
+print('data/HandLab_TMSBioMetrics_Correlations.png','-dpng');               % print figure
+close(1);                                                                   % close figure
 
 %% RUN THE TMSSites ANALYSIS TOO
 HandLab_TMSSites;

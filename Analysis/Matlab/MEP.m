@@ -100,11 +100,11 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
     %% process the pulsetime_________________________________________________
     endtime = size(data,1) ./ (samplehz./1000);
     
-    %% load all the default options__________________________________________
+    %% load all the default options______________________________________
     if nargin==3
         options.auc = 'threshold';                                            % base AUC calculation on the threshold criteria
         options.average = false;                                              % the data are not an average
-        options.baseline = [pulsetime-(1000./samplehz),0];                    % use all available baseline data
+        options.baseline = [-(pulsetime./(1000./samplehz)),0];                % use all available baseline data
         options.demean = true;                                                % remove the mean across the baseline
         options.flip = false;                                                 % don't invert data if first peak is not the positive max
         options.mirror = true;                                                % calculate both the post-TMS data and a mirrored portion of data pre-TMS
@@ -119,7 +119,12 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         options.title = '';                                                   % no title
     end
 
-    %% check the options.baseline parameter__________________________________
+    %% check the options.auc parameter___________________________________
+    if ~isfield(options,'auc')
+        options.auc = 'threshold';
+    end
+
+    %% check the options.baseline parameter______________________________
     if isfield(options,'baseline') && ~isempty(options.baseline)
         if abs(options.baseline(1)) > pulsetime
             error('options.baseline starts before the data (or pulsetime is too late)');
@@ -128,23 +133,23 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
             options.baseline(2) = 0;
         end
         if options.baseline(2) < options.baseline(1)
-            error('options.baseline end is before the start');
+            error('options.baseline end is before options.baseline start');
         end
     else
         options.baseline = [-pulsetime, 0];
     end
 
-    %% check the options.demean parameter____________________________________
+    %% check the options.demean parameter________________________________
     if ~isfield(options,'demean') || ~islogical(options.demean)
         options.demean=true;
     end
     
-    %% check the options.mirror parameter____________________________________
+    %% check the options.mirror parameter________________________________
     if ~isfield(options,'mirror') || ~islogical(options.mirror)
         options.mirror=true;
     end
     
-    %% check the options.plot parameter______________________________________
+    %% check the options.plot parameter__________________________________
     if ~isfield(options,'plot') || ~islogical(options.plot)
         options.plot = true;
         if ~isfield(options,'figure') || ~isfinite(options.figure)
@@ -158,32 +163,38 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         end
     end
  
-    %% check the options.threshold parameters________________________________
-    if isfield(options,'threshold')                                           % if threshold given
-        if ~isfield(options.threshold,'type')                                 % if no type yet
-            options.threshold.type = 'peak';                                  % default = use peak-to-peak and no onset/offset
+    %% check the options.threshold parameters____________________________
+    if isfield(options,'threshold')                                         % if threshold given
+        if ~isfield(options.threshold,'type')                               % if no type yet
+            options.threshold.type = 'peak';                                % default = use peak-to-peak and no onset/offset
         else
             switch options.threshold.type
+
                 case 'abs'
                     if ~isfield(options.threshold,'criterion')
-                        options.threshold.criterion = 0.05;                   % absolute threshold for MEP onset = 0.05mV
+                        options.threshold.criterion = 0.05;                 % absolute threshold for MEP onset = 0.05mV
                     end
+
                 case 'p'
-                    options.threshold.criterion = 0.001;                      % p-value threshold = 0.001 (Z=3.09)
+                    options.threshold.criterion = 0.001;                    % p-value threshold = 0.001 (Z=3.09)
+
                 case 'peak'
+
                 case 'rel'
-                    options.threshold.criterion = 2;                          % relative criterion = 2 times the max / min baseline
+                    options.threshold.criterion = 2;                        % relative criterion = 2 times the max / min baseline
+                    
                 case 'rms'
+
                 case 'sd'
                     if ~isfield(options.threshold,'criterion')
-    	                options.threshold.criterion = 3.09;                   % SD threshold = 3.09 (p<.001)
+    	                options.threshold.criterion = 3.09;                 % SD threshold = 3.09 (p<.001)
                     end
             end
             if ~isfield(options.threshold,'duration')
-                options.threshold.duration = [0,0];                           % duration that threshold must be exceeded, default = first sample
+                options.threshold.duration = [0,0];                         % duration that threshold must be exceeded, default = first sample
             end
             if ~isfield(options.threshold,'proportion')
-                options.threshold.proportion = 1;                             % proportion of samples that must be above/below threshold within the above duration, default = all
+                options.threshold.proportion = 1;                           % proportion of samples that must be above/below threshold within the above duration, default = all
             end
         end
     else
@@ -199,39 +210,39 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
             error('options.window has the too many elements, should be 2x1 or 3x1 array');
         end
         if numel(options.window) > 1 && isempty(options.window(2))
-            options.window(2) = 50;                                           % default to finishing at 50ms
+            options.window(2) = 50;                                         % default to finishing at 50ms
         end
         if numel(options.window) > 2 && isempty(options.window(3))
-            options.window(3) = NaN;                                          % default to...
+            options.window(3) = NaN;                                        % default to...
         end
         if numel(options.window) > 0 && ~isfinite(options.window(1))
-            options.window(1) = 0;                                            % start immediately after TMS pulse
+            options.window(1) = 0;                                          % start immediately after TMS pulse
         end
         if numel(options.window) > 1 && ~isfinite(options.window(2))
-            options.window(2) = endtime-pulsetime;                            % look until the end of the data
+            options.window(2) = endtime-pulsetime;                          % look until the end of the data
         end
     else
-        options.window=[10, 50, NaN];                                         % default window
+        options.window=[10, 50, NaN];                                       % default window
     end
 
-    %% convert parameters to sample numbers (_s, confusingly)________________
+    %% convert parameters to sample numbers (_s, confusingly)____________
     pulsetime_s = round(pulsetime .* (samplehz./1000));                       % convert pulse time to samples
     endtime_s = round(endtime .* (samplehz./1000));                           % convert end time to samples
     options.baseline_s = round((pulsetime+options.baseline) .* (samplehz./1000));% convert baseline to samples
     options.baseline_s(1) = options.baseline_s(1) + 1;                        % minimum = first sample
     options.window_s = round(options.window .* (samplehz./1000));             % convert window times to samples
 
-    %% MEASURE THE MEP_______________________________________________________
-    sweep=nan(size(data,1),options.mirror+1);                                 % pre-allocate
+    %% MEASURE THE MEP___________________________________________________
+    sweep=nan(size(data,1),options.mirror+1);                               % pre-allocate
     
-    for n = 1:options.mirror+1                                                % first use post-pulse data, then use pre-pulse data as a control
-        sweep(:,n) = data;                                                    % use the post-pulse data
+    for n = 1:options.mirror+1                                              % first use post-pulse data, then use pre-pulse data as a control
+        sweep(:,n) = data;                                                  % use the post-pulse data
         if n ~= 1
-	    if pulsetime_s < (endtime_s - pulsetime_s)
-	        sweep(pulsetime_s+1:pulsetime_s.*2, n) = data(1:pulsetime_s); % copy pre-pulse data into post-pulse data
-	    else
-                sweep(pulsetime_s+1:endtime_s, n) = data(1:pulsetime_s);      % copy pre-pulse data into post-pulse data
-	    end
+	        if pulsetime_s < (endtime_s - pulsetime_s)
+	            sweep(pulsetime_s+1:pulsetime_s.*2, n) = data(1:pulsetime_s);% copy pre-pulse data into post-pulse data
+            else
+                sweep(pulsetime_s+1:endtime_s, n) = data(1:endtime_s - pulsetime_s);% copy pre-pulse data into post-pulse data
+	        end
         end
 
         % get start and end sample of analysis window
@@ -243,7 +254,7 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
             sweep(:,n) = sweep(:,n) - mean(sweep(options.baseline_s(1):options.baseline_s(2),n));
         end
 
-        %% MEASURE THE BASELINE______________________________________________
+        %% MEASURE THE BASELINE__________________________________________
         if n==1
             mep.baseline.mean = mean(sweep(options.baseline_s(1):options.baseline_s(2),n));
             mep.baseline.max = max(sweep(options.baseline_s(1):options.baseline_s(2),n));
@@ -252,7 +263,7 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
             mep.baseline.rms = sqrt(mean(sweep(options.baseline_s(1):options.baseline_s(2),n).^2));
         end
 
-        %% GET PEAKS AND FLIP THE DATA?______________________________________
+        %% GET PEAKS AND FLIP THE DATA?__________________________________
         % get min and max peaks and latencies
         [mep.minamp(n), mep.minlat(n)] = min(sweep(start:finish,n));
         [mep.maxamp(n), mep.maxlat(n)] = max(sweep(start:finish,n));
@@ -272,13 +283,14 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         % OR SET TIGHTER WINDOWS BASED, EG, ON PARTICIPANT HEIGHT AND MUSCLE?
         
 	
-        %% GET MEP PEAK-TO-PEAK AMPLITUDE____________________________________
+        %% GET MEP PEAK-TO-PEAK AMPLITUDE________________________________
         mep.amp(n) = mep.maxamp(n) - mep.minamp(n);
 	
 	
-        %% GET ONSET / OFFSET LATENCIES______________________________________
+        %% GET ONSET / OFFSET LATENCIES__________________________________
         switch options.threshold.type
             case 'peak'
+
             case 'sd'
                 supra(:,n) = sweep(:,n) ./ sweep(:,n);                       % index of ones as long as the sweep, then replace segments with NaN
                 supra(abs(sweep(:,n)) < (mep.baseline.mean+options.threshold.criterion.*mep.baseline.sd),n) = 0;% datapoints outside of the threshold
@@ -304,8 +316,8 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         end
 
 
-        %% GET THE MEP AREA UNDER THE CURVE__________________________________
-	switch options.auc
+        %% GET THE MEP AREA UNDER THE CURVE______________________________
+	    switch options.auc
             case 'threshold'
 	        % not coded yet
             case 'window'
@@ -313,14 +325,14 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         end
 
 
-	%% FIT A NONLINEAR MODEL TO THE DATA_________________________________
-	%ts = [options.window(1) : (1000./samplehz) : options.window(2)]';
-	%ds = sweep(start:finish, n);
-	%fitopts.plot = false;
-	%[fit{n}, gof{n}, out{n}] = MEP_fit(ts, ds, fitopts);
-	%mep.fit_rsq(n) = gof{n}.adjrsquare;
-	%mep.fit_auc(n) = out{n}.auc_fit ./ (samplehz./1000); % convert back to ms.mV
-	%print('mep.png','-dpng');
+	    %% FIT A NONLINEAR MODEL TO THE DATA_____________________________
+	    %ts = [options.window(1) : (1000./samplehz) : options.window(2)]';
+	    %ds = sweep(start:finish, n);
+	    %fitopts.plot = false;
+	    %[fit{n}, gof{n}, out{n}] = MEP_fit(ts, ds, fitopts);
+	    %mep.fit_rsq(n) = gof{n}.adjrsquare;
+	    %mep.fit_auc(n) = out{n}.auc_fit ./ (samplehz./1000); % convert back to ms.mV
+	    %print('mep.png','-dpng');
 
     end
     
@@ -328,7 +340,7 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
     mep.minlat = (mep.minlat + options.window_s(1)-1) .* (1000./samplehz);
     mep.maxlat = (mep.maxlat + options.window_s(1)-1) .* (1000./samplehz);
    
-    %% PLOT THE DATA_________________________________________________________
+    %% PLOT THE DATA_____________________________________________________
     if options.plot
         xt = -pulsetime+(1000./samplehz):(1000./samplehz):(endtime-pulsetime);% timescale for x-axis
 
@@ -338,9 +350,9 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
             subplot(options.subplot(1), options.subplot(2), options.subplot(3));% choose the sub-plot
         end
 	    hold on;
-	    plot(xt,sweep(:,1),'b-');                	                      % plot the data
+	    plot(xt,sweep(:,1),'b-');                	                        % plot the data
 
-        if strcmp(options.threshold.type, 'sd')                               % plot data outside the threshold = potential response
+        if strcmp(options.threshold.type, 'sd')                             % plot data outside the threshold = potential response
             plot(xt,sweep(:,1).*supra(:,1), 'm');
         end
 	    
@@ -362,11 +374,11 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         xrng = [options.baseline(1), options.baseline(2)];
         plot(xrng, [mep.baseline.mean,mep.baseline.mean], 'k-');
         for s=1:5 % standard deviation lines
-	    plot(xrng, [mep.baseline.mean + s.*mep.baseline.sd, mep.baseline.mean + s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
-	    plot(xrng, [mep.baseline.mean - s.*mep.baseline.sd, mep.baseline.mean - s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
+	        plot(xrng, [mep.baseline.mean + s.*mep.baseline.sd, mep.baseline.mean + s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
+	        plot(xrng, [mep.baseline.mean - s.*mep.baseline.sd, mep.baseline.mean - s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
         end
-	plot(xrng, [mep.baseline.max, mep.baseline.max], 'k:');
-	plot(xrng, [mep.baseline.min, mep.baseline.min], 'k:');
+	    plot(xrng, [mep.baseline.max, mep.baseline.max], 'k:');
+	    plot(xrng, [mep.baseline.min, mep.baseline.min], 'k:');
         a=axis;
 	
         % plot x- and y-axis lines
