@@ -1,5 +1,5 @@
 %% trim and fill algorithm for meta-analysis
-
+% 
 % from Taylor & Tweedle (2000)?
 % There are n studies trying to measure effect D. Each study, j, produces an effect size Yj, which estimates D with variance Sj
 % In addition to n observed studies, there are k0 missing
@@ -20,7 +20,7 @@
 %4. Continue until the number of removed points, k0, is the same across 2 iterations
 %5. Fill the funnel plot with all the k0 symmetric points
 
-function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
+function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
 
     %% PROCESS THE INPUT ARGUMENTS_________________________________________
     if nargin == 0
@@ -30,8 +30,12 @@ function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
     elseif nargin == 2
         side = [];
         estimator = "L0";
+	verbose = false;
     elseif nargin ==3
-        estimator = "L0";        
+        estimator = "L0";     
+        verbose = false;
+    elseif nargin ==4
+        verbose = false;
     end
     if size(x,2)>size(x,1)
         x = x';
@@ -54,18 +58,19 @@ function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
     if numel(x) ~= numel(s)
         error('trimfill: different number of mean and SE datapoints entered');
     end
-
-
-    %% START THE ANALYSIS__________________________________________________
-
+    if ~verbose
+        verbose=false;
+    end
 
     %% FLIP THE DATA ?_____________________________________________________
     if side == 1                                                            % if side is POSITIVE
         x = -x;                                                             % flip the data
-    elseif isempty(side)                                                      % if side not specified
+    elseif isempty(side)                                                    % if side not specified
         if max(x) < max(abs(x))                                             % use the least-extreme side
             side = 1;                                                       % set this to the positive side
             x = -x;                                                         % flip the data
+	else
+	    side = -1;                                                      % set this to the negative side
         end
     end
 
@@ -76,7 +81,7 @@ function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
     k = numel(x);                                                           % how many studies entered
     k0 = -1;                                                                % set the N suppressed studies to -1
     k0_tmp = 0;                                                             % current estimate of N suppressed studies
-    iterations = 100;                                                       % how many times to try?
+    iterations = 10;                                                        % how many times to try?
     i = 0;                                                                  % current iteration
 
 
@@ -86,15 +91,17 @@ function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
         i = i+1;                                                            % increment iterations
         if i>iterations
             warning(['trimfill: algorithm did not converge in ',int2str(iterations),' iterations']);% warning message
+	    stats.converge = false;
             break;                                                          % exit the while loop
         end
 
         % truncate the data by removing the latest estimet of k0 suppressed studies
-        x_truncated = x(1:k-k0);                                            % remove the most-extreme k0 values off the end of means
-        s_truncated = s(1:k-k0);                                            % remove the most-extreme k0 values off the end of SEs
+        x_truncated = x(1:k-k0_tmp);                                        % remove the most-extreme k0 values off the end of means
+        s_truncated = s(1:k-k0_tmp);                                        % remove the most-extreme k0 values off the end of SEs
 
-        % get new estimate of meta effect size using TRUNCATED data %%% DO THIS!!! %%%
-        M = 0;
+        % get new estimate of meta effect size using truncated data________
+	meta = meta_analysis(x_truncated, s_truncated, .05, 0, 'Fixed');
+        M = meta.FE_Mean;
 
         % centre, rank and sign the original data around the new truncated meta effect size
         x_cent = x - M;                                                     % centre the values around the new meta-mean estimate
@@ -125,14 +132,15 @@ function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
         Tn = sum(x_ranks.*x_signs);                                         % sum of signed ranks = Tn
 
         % L0 estimator_____________________________________________________
-        L0 = ((4.*Tn) - (k.*(k + 1))) ./ (2.*k - 1);
-        L0_Tn_var = (1./24) .* (k.*(k+1).*(2.*k+1) + 10.*L0.^3 + 27.*L0.^2 + 17.*L0 - 18.*k.*L0.^2 - 18.*k.*L0 + 6.*k.^2.*L0);
-        L0_se = 4.*sqrt(L0_Tn_var) ./ (2.*k - 1);
+	Sr = sum((x_ranks.*x_signs).*((x_ranks.*x_signs)>0));               % sum of positive-signed ranks
+        L0 = ((4.*Sr) - (k.*(k + 1))) ./ (2.*k - 1);
+        L0_Sr_var = (1./24) .* (k.*(k+1).*(2.*k+1) + 10.*L0.^3 + 27.*L0.^2 + 17.*L0 - 18.*k.*L0.^2 - 18.*k.*L0 + 6.*k.^2.*L0);
+        L0_se = 4.*sqrt(L0_Sr_var) ./ (2.*k - 1);
 
         % Q0 estimator
         Q0 = k - 1/2 - sqrt(2.*k.^2 - 4.*Tn + 0.25);
         Q0_Tn_var = (1./24) .* (k.*(k+1).*(2.*k+1) + 10.*Q0.^3 + 27.*Q0.^2 + 17.*Q0 - 18.*k.*Q0.^2 - 18.*k.*Q0 + 6.*k.^2.*Q0);
-        Q0_se = 2.*sqrt(Q0_Tn_var) ./ sqrt((k-0.5).^2 - k0.*(2.*k - k0 - 1));
+        Q0_se = 2.*sqrt(Q0_Tn_var) ./ sqrt((k-0.5).^2 - k0_tmp.*(2.*k - k0_tmp - 1));
 
 
         %% SET UP NEXT ITERATION___________________________________________
@@ -146,23 +154,48 @@ function [filled, L0, R0, Q0, Tn] = trim_and_fill(x, s, side, estimator)
         end
 
         % round K0 & make it non-negative__________________________________
-        k0 = max(0, round(k0));
+        k0_tmp = max(0, round(k0_tmp));
         % se.k0 <- max(0, se.k0)
 
+        if verbose
+	    disp([' iteration: ',int2str(i),', mean = ',num2str(M,3),', k0 = ',int2str(k0_tmp),'...']);
+	end
     end
 
+    %% OUTPUT THE STATS____________________________________________________
+    if i<iterations
+        stats.converge = true;
+    end
+    stats.estimator = estimator;
+    stats.side = side;
+    stats.i = i;
+    stats.x_cent = x_cent;
+    stats.x_ranks = x_ranks;
+    stats.x_signs = x_signs;
+    stats.k = k;
+    stats.k0 = k0;
+    stats.k0_tmp = k0_tmp;
+    stats.L0 = L0;
+    stats.R0 = R0;
+    stats.Q0 = Q0;
+    stats.Tn = Tn;
+    stats.M = M;
+    
     %% FILL IN THE SUPRESSED STUDIES ?_____________________________________
-    if k0==0
+    if k0_tmp==0
         filled.x = x;
         filled.s = s;
     else
-        filled.x = x;
-        filled.s = s;
+        filled.x = [-x_cent(k:-1:k-k0+1);x_cent];
+        filled.s = [s(k:-1:k-k0+1);s];
+	meta = meta_analysis(x_truncated, s_truncated, .05, 0, 'Fixed');
+        filled.M = meta.FE_Mean;
     end
 
     %% UNFLIP THE DATA_____________________________________________________
     if side ==1
         filled.x = -filled.x;                                               % flip the data back to the original direction
+	stats.M = -stats.M;
     end
 end
 

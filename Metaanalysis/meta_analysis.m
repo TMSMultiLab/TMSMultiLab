@@ -1,4 +1,4 @@
-function stats = meta_analysis(Ms, Vs, alpha, comparison, method)
+function stats = meta_analysis(Ms, SEs, alpha, comparison, method)
 % https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-10
 % https://methods.cochrane.org/sites/methods.cochrane.org.statistics/files/uploads/SMG_training_course_2016/cochrane_smg_training_2016_viechtbauer.pdf
 % https://jasp-stats.org/2017/11/15/meta-analysis-jasp/
@@ -90,15 +90,17 @@ function stats = meta_analysis(Ms, Vs, alpha, comparison, method)
 
 
     %% COMMON STATS NEEDED_______________________________________________
+    stats.Ms = Ms;                                                                          % include the means in the output
+    stats.Vs = SEs.^2;                                                                      % convert SE inputs into variances
     stats.method = method;
     stats.Alpha = alpha;
     stats.null = comparison;
     stats.k = numel(Ms);                                                                    % number of groups 
-    stats.Ws = 1 ./ Vs;                                                                     % weights = 1 / variances
+    stats.Ws = 1 ./ stats.Vs;                                                               % weights = 1 / variances
     
     stats.FE_SumOfWeights = sum(stats.Ws);                                                  % 1) FE sum of weights
-    stats.FE_SumOfWeightedMeans = sum(stats.Ws.*Ms);                                        % 2) FE sum of weight x mean
-    stats.RE_SumOfEffectxVariance = sum(Ms.^2 ./ Vs);                                       % 9) sum of effect^2 / variance
+    stats.FE_SumOfWeightedMeans = sum(stats.Ws.*stats.Ms);                                  % 2) FE sum of weight x mean
+    stats.RE_SumOfEffectxVariance = sum(stats.Ms.^2 ./ stats.Vs);                           % 9) sum of effect^2 / variance
     stats.FE_SumOfSquaredWeights = sum(stats.Ws.^2);                                        % 10) sum of FE weight^2
     stats.Q = stats.RE_SumOfEffectxVariance - (stats.FE_SumOfWeightedMeans.^2 ./stats.FE_SumOfWeights);% 11) Q = heterogeneity; Cochran's Q-test, Hedges and Olkin 1985
     stats.Qdf = stats.k - 1;                                                                % 12) df = groups - 1
@@ -154,7 +156,7 @@ function stats = meta_analysis(Ms, Vs, alpha, comparison, method)
 	        % good with large between-study variance
 	        % Sy^2 = (1/k-1).*Sum of (yi-ybar)^2
 	        % Tau^2 = max(0, Sy^2 - (1/k).*sum(Vi))
-	        stats.RE_TauSquared = max(0,((1./stats.Qdf) .* sum((Ms - mean(Ms)).^2)) - ((1./stats.k).*sum(Vs)));
+	        stats.RE_TauSquared = max(0,((1./stats.Qdf) .* sum((stats.Ms - mean(stats.Ms)).^2)) - ((1./stats.k).*sum(stats.Vs)));
 	        stats.RE_ISquared = [];%100 .* max(0, (stats.Q - stats.Qdf) ./ stats.Q);        % 23) excess variance as percentage of total variance observed in the effect size estimates across studies - akin to intraclass correlation
 	        stats.RE_HSquared = [];%stats.Q ./ stats.Qdf;                                   % 24) total variability / within-study variance
 	        
@@ -228,7 +230,7 @@ function stats = meta_analysis(Ms, Vs, alpha, comparison, method)
 	        % mu-hat = sum((1/q-hat).*yi / sum(1./q-hat)
 	        % Tau^2 = (1/(k - 1)) * sum((1/q-hat)*(yi - mu-hat)^2
 	        Tau0 = sum((Ms - mean(Ms)).^2) ./ stats.k;
-	        rhat = Vs./Tau0;
+	        rhat = stats.Vs./Tau0;
 	        qhat = rhat + 1;
 	        muhat = sum((1./qhat).*Ms) ./ sum(1./qhat);
 	        stats.RE_TauSquared = (1./stats.Qdf) .* sum((1./qhat).*(Ms - muhat).^2);
@@ -267,8 +269,8 @@ function stats = meta_analysis(Ms, Vs, alpha, comparison, method)
     
     switch method
         case {'DL', 'HO', 'HS', 'SJ'}
-            stats.RE_SumOfWeights = sum(1 ./ (Vs + stats.RE_TauSquared));                   % 15) sum of RE weights = 1 / (within variance + between variance)
-            stats.RE_SumOfEffectsOverVariances = sum(Ms ./ (Vs + stats.RE_TauSquared));     % 16) sum of Estimate / RE variance (within variance + between variance)
+            stats.RE_SumOfWeights = sum(1 ./ (stats.Vs + stats.RE_TauSquared));             % 15) sum of RE weights = 1 / (within variance + between variance)
+            stats.RE_SumOfEffectsOverVariances = sum(stats.Ms ./ (stats.Vs + stats.RE_TauSquared));% 16) sum of Estimate / RE variance (within variance + between variance)
             stats.RE_Mean = stats.RE_SumOfEffectsOverVariances ./ stats.RE_SumOfWeights;    % 17) RE meta-analytic mean
             stats.RE_SE = sqrt(1 ./ stats.RE_SumOfWeights);                                 % 18) RE meta-analytic SE
             stats.RE_CI(1) = stats.RE_Mean + (stats.RE_SE .* norminv(alpha./2));            % 19) RE upper CI
@@ -279,7 +281,7 @@ function stats = meta_analysis(Ms, Vs, alpha, comparison, method)
 	    otherwise
     end
     
-    %% FUNNEL PLOT ASYMMETRY & DIAGNOSTICS_______________________________
+    %% FUNNEL PLOT ASYMMETRY & DIAGNOSTICS_________________________________
     
     % trim and fill________________________________________________________
     
