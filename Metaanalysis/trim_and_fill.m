@@ -1,41 +1,69 @@
-%% trim and fill algorithm for meta-analysis
-% 
+%
+% trim and fill algorithm for meta-analysis:
+%
+% [filled, stats] = trim_and_fill(x, s [, side] [, estimator] [, method] [, verbose])
+%
+% x = mx1 array of study means [required]
+%
+% s = mx1 array of study SEs [required]
+%
+% side = -1 for left, negative effects suppressed; 1 for right, positive effects suppressed (default = -1)
+%
+% estimator = 'L0', 'R0', 'Q0' (default = 'L0')
+%
+% method = 'FE','DL','HM','HO','HS','SJ' (default = 'DL' Dersimonian-Laird)
+%
+% verbose = false, true (default = false)
+%
 % from Taylor & Tweedle (2000)?
 % There are n studies trying to measure effect D. Each study, j, produces an effect size Yj, which estimates D with variance Sj
 % In addition to n observed studies, there are k0 missing
 % suppose that there are originally n + k0 studies with this structure, and that k0 values from the set Xj have been suppressed, leaving a set of n observed studies.
-% "Our key assumption is: The suppression has taken place in such a way that it is the k0 values of the Xj with the most extreme negative ranks that have been suppressed
-
+% 'Our key assumption is: The suppression has taken place in such a way that it is the k0 values of the Xj with the most extreme negative ranks that have been suppressed
+%
 % The non-suppressed studies, n, are re-ranked. Three statistics are generated from this set of ranks:
-% gamma*>0 = the right-most run of positive ranks
+% gamma *> 0 = the right-most run of positive ranks
 % Tn = Wilcoxon statistic for the n ranked studies, then
-% R0=gamma*-1
-% L0=[4Tn - n(n+1)]/(2n+1)
-% Q0=n - 1/2 - sqrt(2n^2 - 4Tn + 1/4)
-
+% R0 = gamma*-1
+% L0 = [4Tn - n(n+1)] / (2n+1)
+% Q0 = n - 1/2 - sqrt(2n^2 - 4Tn + 1/4)
+%
 % Right = positive effects (most extreme effects)
-%1. Estimate D, get initial centred values, and estimate of k0
-%2. Remove right-most values, and re-estimate D using the trimmed set of data; construct centred values and new k0(2) from this set
-%3. Remove k0(2) values from right-most end, re-estimate D using trimmed data
-%4. Continue until the number of removed points, k0, is the same across 2 iterations
-%5. Fill the funnel plot with all the k0 symmetric points
+%
+% Algorithm:
+% 1. Estimate meta-analytic mean effect, D, get initial centred values, and estimate of k0
+% 2. Remove right-most (extreme) values, and re-estimate D using the trimmed set of data; construct centred values and new k0(2) from this set
+% 3. Remove k0(2) values from right-most end, re-estimate D using trimmed data
+% 4. Continue until the number of removed points, k0, is the same across 2 iterations
+% 5. Fill the funnel plot with all the k0 symmetric points
+%
+% REFERENCES:
+% https://pmc.ncbi.nlm.nih.gov/articles/PMC6571372/
+% https://www.rdocumentation.org/packages/metafor/versions/2.4-0/topics/trimfill
+% https://github.com/wviechtb/metafor/blob/master/R/trimfill.rma.uni.r
 
-function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
+function [filled, stats] = trim_and_fill(x, s, side, estimator, method, verbose)
 
     %% PROCESS THE INPUT ARGUMENTS_________________________________________
-    if nargin == 0
-        error('trimfill: no data specified');
-    elseif nargin == 1
-        error('trimfill: no standard error specified');
-    elseif nargin == 2
-        side = [];
-        estimator = "L0";
-	verbose = false;
-    elseif nargin ==3
-        estimator = "L0";     
-        verbose = false;
-    elseif nargin ==4
-        verbose = false;
+    switch nargin
+        case 0
+            error('trimfill: no data specified');
+        case 1
+            error('trimfill: no standard error specified');
+        case 2
+            side = [];
+            estimator = 'L0';
+	    method = 'DL';
+	    verbose = false;
+        case 3
+            estimator = 'L0'; 
+            method = 'DL';	
+            verbose = false;
+        case 4
+            method = 'DL';
+	    verbose = false;
+        case 5
+	    verbose = false;
     end
     if size(x,2)>size(x,1)
         x = x';
@@ -58,8 +86,17 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
     if numel(x) ~= numel(s)
         error('trimfill: different number of mean and SE datapoints entered');
     end
+    if side ~= -1 & side ~= 1
+        side = [];
+    end
+    if sum(strcmp(estimator, {'L0','RO','Q0'})) == 0
+        estimator = 'L0';
+    end
+    if sum(strcmp(method, {'FE','DL','HM','HO','HS','SJ'})) == 0
+        method = 'DL';
+    end
     if ~verbose
-        verbose=false;
+        verbose = false;
     end
 
     %% FLIP THE DATA ?_____________________________________________________
@@ -100,9 +137,12 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
         s_truncated = s(1:k-k0_tmp);                                        % remove the most-extreme k0 values off the end of SEs
 
         % get new estimate of meta effect size using truncated data________
-	meta = meta_analysis(x_truncated, s_truncated, .05, 0, 'Fixed');
-        M = meta.FE_Mean;
-
+	meta = meta_analysis(x_truncated, s_truncated, .05, 0, method);
+	if method == 'FE'
+            M = meta.FE_Mean;
+        else
+	    M = meta.RE_Mean;
+        end
         % centre, rank and sign the original data around the new truncated meta effect size
         x_cent = x - M;                                                     % centre the values around the new meta-mean estimate
         [~,~,x_ranks] = unique(abs(x_cent));                                % rank the absolute centred values
@@ -145,11 +185,11 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
 
         %% SET UP NEXT ITERATION___________________________________________
         switch estimator
-            case "R0"
+            case 'R0'
                 k0_tmp = R0;
-            case "L0"
+            case 'L0'
                 k0_tmp = L0;
-            case "Q0"
+            case 'Q0'
                 k0_tmp = Q0;
         end
 
@@ -158,7 +198,7 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
         % se.k0 <- max(0, se.k0)
 
         if verbose
-	    disp([' iteration: ',int2str(i),', mean = ',num2str(M,3),', k0 = ',int2str(k0_tmp),'...']);
+	    disp([' iteration: ',int2str(i),', ',method,', mean = ',num2str(M,3),', k0 = ',int2str(k0_tmp),'...']);
 	end
     end
 
@@ -168,6 +208,7 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
     end
     stats.estimator = estimator;
     stats.side = side;
+    stats.method = method;
     stats.i = i;
     stats.x_cent = x_cent;
     stats.x_ranks = x_ranks;
@@ -188,8 +229,12 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
     else
         filled.x = [-x_cent(k:-1:k-k0+1);x_cent];
         filled.s = [s(k:-1:k-k0+1);s];
-	meta = meta_analysis(x_truncated, s_truncated, .05, 0, 'Fixed');
-        filled.M = meta.FE_Mean;
+	meta = meta_analysis(x_truncated, s_truncated, .05, 0, method);
+	if method == 'FE'
+            filled.M = meta.FE_Mean;
+        else
+	   filled. M = meta.RE_Mean;
+        end
     end
 
     %% UNFLIP THE DATA_____________________________________________________
@@ -198,89 +243,3 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, verbose)
 	stats.M = -stats.M;
     end
 end
-
-% SEE:
-% https://pmc.ncbi.nlm.nih.gov/articles/PMC6571372/
-% https://www.rdocumentation.org/packages/metafor/versions/2.4-0/topics/trimfill
-% https://github.com/wviechtb/metafor/blob/master/R/trimfill.rma.uni.r
-
-%    while (abs(k0 - k0.sav) > 0) {
-% 
-%    #########################################################################
-% 
-%    ### if estimated number of missing studies is > 0
-% 
-%    if (k0 > 0) {
-% 
-%       ### flip data back if side is right
-% 
-%       if (side == "right") {
-%          yi.c <- -1 * (yi.c - beta)
-%       } else {
-%          yi.c <- yi.c - beta
-%       }
-% 
-%       ### create filled-in data set
-% 
-%       yi.fill <- c(x$yi.f, -1*yi.c[(k-k0+1):k])
-% 
-%       ### apply limits if specified
-% 
-%       if (!missing(ilim)) {
-%          ilim <- sort(ilim)
-%          if (length(ilim) != 2L)
-%             stop(mstyle$stop("Argument 'ilim' must be of length 2."))
-%          yi.fill[yi.fill < ilim[1]] <- ilim[1]
-%          yi.fill[yi.fill > ilim[2]] <- ilim[2]
-%       }
-% 
-%       vi.fill <- c(x$vi.f, vi[(k-k0+1):k])
-%       wi.fill <- c(x$weights.f, wi[(k-k0+1):k])
-%       ni.fill <- c(x$ni.f, ni[(k-k0+1):k])
-% 
-%       ### add measure attribute to the yi.fill vector
-% 
-%       attr(yi.fill, "measure") <- x$measure
-% 
-%       ### fit model with imputed data
-% 
-%       args <- list(yi=yi.fill, vi=vi.fill, weights=wi.fill, ni=ni.fill, method=x$method, weighted=x$weighted, digits=x$digits, ...)
-%       res <- suppressWarnings(.do.call(rma.uni, args))
-% 
-%       ### fill, ids, and slab are of length 'k.f + k0' (i.e., subsetted but with NAs)
-% 
-%       res$fill <- c(rep(FALSE,x$k.f), rep(TRUE,k0))
-%       res$ids  <- c(x$ids, (max(x$ids)+1):(max(x$ids)+k0))
-% 
-%       if (x$slab.null) {
-%          res$slab <- c(paste("Study", x$ids), paste("Filled", seq_len(k0)))
-%       } else {
-%          res$slab <- c(x$slab, paste("Filled", seq_len(k0)))
-%       }
-%       res$slab.null <- FALSE
-% 
-%    } else {
-% 
-%       ### in case 0 studies are imputed
-% 
-%       res      <- x
-%       res$fill <- rep(FALSE,k)
-% 
-%    }
-% 
-%    res$k0     <- k0
-%    res$se.k0  <- se.k0
-%    res$side   <- side
-%    res$k0.est <- estimator
-%    res$k.all  <- x$k.all + k0
-% 
-%    if (estimator == "R0") {
-%       m <- -1:(k0-1)
-%       res$p.k0 <- 1 - sum(choose(0+m+1, m+1) * 0.5^(0+m+2))
-%    } else {
-%       res$p.k0 <- NA_real_
-%    }
-% 
-%    class(res) <- c("rma.uni.trimfill", class(res))
-%    return(res)
-% }
