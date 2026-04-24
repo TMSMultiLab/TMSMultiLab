@@ -129,7 +129,7 @@ for p=1:numel(SEP_labels)-1
         plot(xpred,ci(:,2),[plotcol,'--']);
 	
 	a=axis;
-	text(mean(a(1:2)),a(3)+(a(4)-a(3))./12,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcol,'FontSize',8);
+	text(mean(a(1:2)),a(3)+(a(4)-a(3))./12,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3),', rmse=',num2str(mdl.RMSE,3)],'Color',plotcol,'FontSize',8);
 	if mod(s,2)==1
 	    text(mean(a(1:2)),a(3)+(a(4)-a(3))./6,1,['y=',num2str(mdl.Coefficients.Estimate(2),3),'x + ',num2str(mdl.Coefficients.Estimate(1),3)],'Color',plotcol,'FontSize',8);
 	else
@@ -196,7 +196,7 @@ for q=1:5
             ylabel(SEP_labels{ys(q)});
         end
 	a=axis;
-	text(mean(a(1:2)),a(3)+(a(4)-a(3))./10,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3)],'Color',plotcol,'FontSize',6);
+	text(mean(a(1:2)),a(3)+(a(4)-a(3))./10,1,['R^2=',num2str(mdl.Rsquared.Adjusted,3),', rmse=',num2str(mdl.RMSE,3)],'Color',plotcol,'FontSize',6);
     end
 end
 print('data/allison-t_1983_correls.png','-dpng');
