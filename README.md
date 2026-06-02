@@ -43,5 +43,13 @@ If you're planning to make major changes to the code, or to contribute new mater
 
 1. Log in to github and browse to the [TMSMultiLab repository](https://github.com/TMSMultiLab/TMSMultiLab)
 2. Click on the <code>Fork</code> menu button, choose the account to which you want the repository to be forked, and include the <code>main</code> branch
-3. You can now edit your own complete version of the TMSMultiLab code and wiki. While you _could_ do this on the github website, most likely you'll do this in a cloned version of your own (forked) repository on your local machine
-4. Come back here when you're ready to share and merge your changes...
+3. You can now edit your own complete version of the TMSMultiLab code and wiki. While you _could_ do this on the github website, most likely you'll do this in a cloned version of your own (forked) remote repository on your local machine, like this:
+   * <code>git remote set-url "origin" git@github.com:[MyUserName]/TMSMultiLapo.git</code> - this tells your local machine where to synch your files with
+5. As you develop your code, you should keep your local version(s) up-to-date with your (forked) github repository, by regularly pulling remote updates to your local machine, then pushing them back up to your repository when done, like this:
+   * <code>git pull</code> - get all the latest updates from  your repository
+   * <code>git status</code> - check current status for any errors or updates
+   * <code>git add -A</code> - add all the local changes to a list of those ready for synching
+   * <code>git commit -m 'latest updates to myfile.txt'</code> - commit the changes to the repository, with a message
+   * <code>git push</code> - push all the changes up
+6. Keep pulling and pushing regularly..!
+7. When you're ready to share the developments from your repository into the main TMSMultiLab repository,  you'll need to do a <code>Pull request</code>
