@@ -1,4 +1,5 @@
 %% load chipchase reporting data and do analysis on it, to be published here: https://github.com/TMSMultiLab/TMSMultiLab/wiki/Reporting-checklist
+colorblind_colormap;                                                        % colour palette
 
 % q 1-8     participants
 % q 9-25    methods
@@ -42,7 +43,8 @@ for p = 1:numel(duplicates)                                                 % fo
 end
 
 %% ANALYSIS & PLOTTING PARAMETERS__________________________________________
-plotcols = {'r','b'};                                                       % reporting and controlled colours
+plotcols = [6,8];                                                           % reporting and controlled colours (from the colorblind palette)
+plotsyms = {'s','o'};                                                       % symbols
 jitter = [-0.125,0.125];                                                    % offset either side of item number
 items = 30;                                                                 % total N items
 its = 10000;                                                                % iterations for bootstrap analyses
@@ -73,15 +75,14 @@ if exist('Chipchase_pmids.mat','file') == 0                                 % if
     pmids = pmids(~duplicates);                                             % remove the duplicates
     pubmeddata = struct();                                                  % for saving the pubmed data
     addpath('../Metaanalysis/');                                            % add path to TMSMultiLab PubMed functions
-
     for p = 1:numel(pmids)                                                  % for each unique PMID
         disp([' Retrieving record ',int2str(p),'...']);                     % keep us informed
         raw = PubMedGet(pmids(p));                                          % retrieve the PubMed XML record
-	if p == 1
-	    pubmeddata = PubMedParse(raw);                                  % parse the PubMed XML data into a structure
-	else
-	    pubmeddata(p) = PubMedParse(raw);                               % parse the PubMed XML data into a structure
-	end
+        if p == 1
+            pubmeddata = PubMedParse(raw);                                  % parse the PubMed XML data into a structure
+        else
+            pubmeddata(p) = PubMedParse(raw);                               % parse the PubMed XML data into a structure
+        end
     end
     save('Chipchase_pmids.mat','pubmeddata');
 else
@@ -103,12 +104,12 @@ for q = 1:items
         n = sum(ix);                                                        % total studies assessed
         t = sum(table2array(items_raw(ix,s)));                              % total studies meeting the criterion
 
-	    % items from items_means table
-	    s = (q-1).*2+r+4;                                                   % column where the data is
-	    m = isfinite(table2array(items_means(:,s)));                        % which additional meta-analyses to add?
-	    n2 = nansum(table2array(items_means(m,4)));                         % total N in these meta-analyses
-	    t2 = nansum(round((table2array(items_means(m,4)).*table2array(items_means(m,s)))/100));% total studies meeting the criterion
-	
+        % items from items_means table
+        s = (q-1).*2+r+4;                                                   % column where the data is
+        m = isfinite(table2array(items_means(:,s)));                        % which additional meta-analyses to add?
+        n2 = nansum(table2array(items_means(m,4)));                         % total N in these meta-analyses
+        t2 = nansum(round((table2array(items_means(m,4)).*table2array(items_means(m,s)))/100));% total studies meeting the criterion
+    
         % bootstrap a 95% CI
         sample = [ones(round(t+t2),1);zeros(round(n+n2-t-t2),1)];           % put all the zeros and ones together
         bn = numel(sample);                                                 % total sample size
@@ -117,11 +118,11 @@ for q = 1:items
             bs(i) = mean(sample(ceil(rand(bn,1).*bn)));                     % get mean of a random sample with replacement
         end
         bs = sortrows(bs);                                                  % arrange from small to large
-        plot(q+jitter(r),(t+t2)./(n+n2),[plotcols{r},'o'],'MarkerFaceColor',plotcols{r});% plot the mean data
-        plot([q+jitter(r),q+jitter(r)],[bs(250),bs(9750)],[plotcols{r},'-'],'LineWidth',2);% plot the 95% bootstrapped confidence interval
-	
-	% build string for reporting on wiki page
-	wiki = [wiki,' **',num2str(100.*(t+t2)./(n+n2),3),'**<br><br>{',num2str(100.*bs(250),3),',&nbsp;',num2str(100.*bs(9750),3),'}|'];
+        plot(q+jitter(r),(t+t2)./(n+n2),plotsyms{r},'Color',colorblind(plotcols(r),:),'MarkerFaceColor',colorblind(plotcols(r),:),'MarkerSize',7);% plot the mean data
+        plot([q+jitter(r),q+jitter(r)],[bs(250),bs(9750)],'-','Color',colorblind(plotcols(r),:),'LineWidth',2);% plot the 95% bootstrapped confidence interval
+    
+        % build string for reporting on wiki page
+        wiki = [wiki,' **',num2str(100.*(t+t2)./(n+n2),3),'**<br><br>{',num2str(100.*bs(250),3),',&nbsp;',num2str(100.*bs(9750),3),'}|'];
     end
     disp([wiki,'|']);
 end
@@ -132,7 +133,9 @@ text(0.75,1.05,'Participants','FontSize',16);                               % la
 text(8.75,1.05,'Methods','FontSize',16);
 text(25.75,1.05,{'Paired-','pulse'},'FontSize',16);
 text(28.75,1.05,'Analysis','FontSize',16);
-xticks([1:30]);
+text(15.5,0.075,'— Reported','Color',colorblind(plotcols(1),:),'FontSize',16,'FontWeight','Bold');% Reported
+text(20,0.075,'— Controlled','Color',colorblind(plotcols(2),:),'FontSize',16,'FontWeight','Bold');% Controlled
+xticks(1:30);
 xticklabels({'','','','','5','','','','','10','','','','','15','','','','','20','','','','','25','','','','','30'});
 xtickangle(0);
 xlabel('Item number');
@@ -144,7 +147,7 @@ set(gca,'FontSize',20);
 print('Chipchase_item_reporting.png','-dpng');
 close(1);
 
-%% TOTAL REPORTING AND CONTROLLING SCORES OVER TIME_______________________
+%% TOTAL REPORTING AND CONTROLLING SCORES OVER TIME________________________
 % summary data from items_raw table
 d = [items_raw.PerR,items_raw.PerC,items_raw.YEAR,items_raw.PMID];         % all the available data
 
@@ -155,7 +158,7 @@ tmp.PERCR(ix) = tmp.TOT(ix);                                               % cop
 d = [d;tmp.PERCR./100,tmp.PERCC./100,tmp.YEAR,tmp.PMID];                   % concatenate all R and T data with items_raw summaries
 clear ix tmp;                                                              % remove temporary variables
 
-%% CORRECT THE YEAR WITH THE PUBLICATION DATE FROM PUBMED DATA____________
+%% CORRECT THE YEAR WITH THE PUBLICATION DATE FROM PUBMED DATA_____________
 journals = strings(size(d,1),1);                                           % to hold the journal abbreviations
 for n = 1:size(d,1)                                                        % for each unique article
     if isfinite(d(n,4))
@@ -163,11 +166,11 @@ for n = 1:size(d,1)                                                        % for
         str = int2str(pubmeddata(j).Year);                                 % build a date string, from the year...
         if ~isempty(pubmeddata(j).Month)
             str = [str,'-',pubmeddata(j).Month];                           % and the month...
-	    if ~isempty(pubmeddata(j).Day)
-	        str = [str,'-',int2str(pubmeddata(j).Day)];                % and the day
-	    else
-	        str = [str,'-15'];                                         % assume middle of month if missing day
-	    end
+        if ~isempty(pubmeddata(j).Day)
+            str = [str,'-',int2str(pubmeddata(j).Day)];                     % and the day
+        else
+            str = [str,'-15'];                                              % assume middle of month if missing day
+        end
         else
             str = [str,'-July-01'];                                        % assume middle of year if missing month & day
         end
@@ -176,7 +179,7 @@ for n = 1:size(d,1)                                                        % for
     end
 end
 
-%% FIX SOME MISSING JOURNALS DATA_________________________________________
+%% FIX SOME MISSING JOURNALS DATA__________________________________________
 js = unique(journals);                                                     % list of unique journals
 j = numel(js);                                                             % how many are there?
 journals_unique = cell(j,4);                                               % Journal name, N, mean, SD
@@ -190,20 +193,20 @@ for j = 1:size(journals_unique,1)
     journals_unique{j,4} = nanstd(d(ix,1));                                % SD reporting
 end
 
-%% CREATE INDEX TO VALID DATA_____________________________________________
+%% CREATE INDEX TO VALID DATA______________________________________________
 clear ix;
 ix(:,1) = isfinite(d(:,1));                                                % valid reporting data
 ix(:,2) = isfinite(d(:,2));                                                % valid controlled data
 xpred = linspace(min(d(:,3)),max(d(:,3)))';                                % 100 equally spaced points across min to max years
 
-%% PLOT THE DATA__________________________________________________________
+%% PLOT THE DATA___________________________________________________________
 for r = 1:2
     figure(r+1);
     % plot raw data and regression fit
     subplot(2,1,1);
     hold on;
     plot([2012,2012],[0,1],'-','Color',[0.6,0.6,0.6],'LineWidth',1);
-    plot(d(ix(:,r),3),d(ix(:,r),r),[plotcols{r},'o'],'MarkerFaceColor',plotcols{r},'MarkerSize',3);
+    plot(d(ix(:,r),3),d(ix(:,r),r),plotsyms{r},'Color',colorblind(plotcols(r),:),'MarkerFaceColor',colorblind(plotcols(r),:),'MarkerSize',3);    
 
     % fit linear model
     mdl = fitlm(d(ix(:,r),3),d(ix(:,r),r));
@@ -214,11 +217,11 @@ for r = 1:2
     else
         sign_lbl='+';
     end
-    plot(xpred,ypred,[plotcols{r},'-'],'Linewidth',2);
-    plot(xpred,ci(:,1),[plotcols{r},'--']);
-    plot(xpred,ci(:,2),[plotcols{r},'--']);
-    text(1986,1,['r(',int2str(sum(ix(:,r))-2),') = ',num2str(correl(1,2))],'Color',plotcols{r},'FontSize',16);
-    text(1986,0.05,['rating = ',num2str(mdl.Coefficients.Estimate(2),3),' (',num2str(mdl.Coefficients.SE(2),3),') years ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3)],'Color',plotcols{r},'FontSize',16);% add the equation to the plot
+    plot(xpred,ypred,'-','Color',colorblind(plotcols(r),:),'Linewidth',2);
+    plot(xpred,ci(:,1),'--','Color',colorblind(plotcols(r),:));
+    plot(xpred,ci(:,2),'--','Color',colorblind(plotcols(r),:));
+    text(1986,1,['r(',int2str(sum(ix(:,r))-2),') = ',num2str(correl(1,2))],'Color',colorblind(plotcols(r),:),'FontSize',16);
+    text(1986,0.05,['rating = ',num2str(mdl.Coefficients.Estimate(2),3),' (',num2str(mdl.Coefficients.SE(2),3),') years ',sign_lbl,num2str(mdl.Coefficients.Estimate(1),3)],'Color',colorblind(plotcols(r),:),'FontSize',16);% add the equation to the plot
     axis([1985,2025,0,1]);
     set(gca,'FontSize',20);
     
@@ -234,8 +237,8 @@ for r = 1:2
             SD = nanstd(d(yx,r));                                           % SD across all studies for this year
             SE = SD./sqrt(N);
             CI = SE.*tinv(.975,N-1);
-            plot(y,M,[plotcols{r},'s'],'MarkerSize',8);
-            plot([y,y],[M-CI,M+CI],[plotcols{r},'-'],'LineWidth',1);
+            plot(y,M,plotsyms{r},'Color',colorblind(plotcols(r),:),'MarkerSize',8);
+            plot([y,y],[M-CI,M+CI],'-','Color',colorblind(plotcols(r),:),'LineWidth',1);
         end
     end
     axis([1985,2025,0,1]);
@@ -250,20 +253,20 @@ for r = 1:2
     ylabel('Proportion criteria met');
     set(gcf,'Position',[1,50,1200,600]);
     print(['Chipchase_study_reporting_',int2str(r),'.png'],'-dpng');
-    %close(r+1);
+    close(r+1);
 end
 
-%% REPEAT, THIS TIME FOR DIFFERENT JOURNALS_______________________________
+%% REPEAT, THIS TIME FOR DIFFERENT JOURNALS________________________________
 %% find a journal name
 % find(strcmp(journals,"Clin Neurophysiol"))                               % in string array of same size as the data
-% find(strcmp(cellstr([journals_unique{:,1}]),'Clin Neurophysiol')==1)	   % in cell array with means across journals list
+% find(strcmp(cellstr([journals_unique{:,1}]),'Clin Neurophysiol')==1)       % in cell array with means across journals list
 
-%% sort journals by most-represented first________________________________
+%% sort journals by most-represented first_________________________________
 jix = nan(size(journals_unique,1),2);                                      % empty array
 jix(:,2) = [journals_unique{:,2}];                                         % number of articles per journal
 jix(:,1) = 1:size(journals_unique,1);                                      % index to journals_unique
 jix = sortrows(jix,2,'descend');                                           % list of most-represented journals first
-plotcols = {'r','b','g','c','k'};
+plotcols = [1,2,6,7,8];
 journals_unique{1,1} = "Other";                                            % missing name is 2nd-most common
 journals(find(journals == "")) = "Other";                                  % replace missing journals
 
@@ -275,15 +278,15 @@ for j = 1:5
     k = mod(j-1,5)+1;
     l = ceil(j./5);
     ix = find(strcmp(journals,journals_unique{jix(j),1})==1);              % list of articles from this journal
-    plot(d(ix,3),d(ix,1),[plotcols{k},'o'],'MarkerFaceColor',plotcols{k},'MarkerSize',5);
+    plot(d(ix,3),d(ix,1),'o','Color',colorblind(plotcols(k),:),'MarkerFaceColor',colorblind(plotcols(k),:),'MarkerSize',5);
     mdl = fitlm(d(ix,3),d(ix,1));
     xpred = linspace(min(d(ix,3)),max(d(ix,3)))';
     [ypred,ci] = predict(mdl,xpred);
-    plot(xpred,ypred,[plotcols{k},'-'],'Linewidth',2);
-    plot(xpred,ci(:,1),[plotcols{k},':'],'Linewidth',1);
-    plot(xpred,ci(:,2),[plotcols{k},':'],'Linewidth',1);
+    plot(xpred,ypred,'-','Color',colorblind(plotcols(k),:),'Linewidth',2);
+    plot(xpred,ci(:,1),':','Color',colorblind(plotcols(k),:),'Linewidth',1);
+    plot(xpred,ci(:,2),':','Color',colorblind(plotcols(k),:),'Linewidth',1);
     label=strjoin([strip(journals_unique{jix(j),1}),', N=',int2str(journals_unique{jix(j),2})],'');
-    text(1986,1-(j./20),label,'color',plotcols{k},'FontSize',16);
+    text(1986,1-(j./20),label,'color',colorblind(plotcols(k),:),'FontSize',16);
 end
 axis([1985,2025,0,1]);
 set(gca,'FontSize',20);
@@ -294,7 +297,7 @@ print('Chipchase_study_reporting_journals.png','-dpng');
 close(3);
 
 
-%% REPEAT FOR MEANS OF TOP 25 JOURNALS______________________________________
+%% REPEAT FOR MEANS OF TOP 25 JOURNALS_____________________________________
 figure(4);
 hold on;
 n=0;
@@ -304,11 +307,12 @@ for j = 1:25
     ix = find(strcmp(journals,journals_unique{jix(j),1})==1);               % list of articles from this journal
     M = mean(d(ix,1));
     S = std(d(ix,1));
-    plot(j,M,[plotcols{k},'o'],'MarkerFaceColor',plotcols{k},'MarkerSize',5);
-    plot([j,j],[M-S,M+S],'-','Color',plotcols{k});
+    plot(j,M,'o','Color',colorblind(plotcols(k),:),'MarkerFaceColor',colorblind(plotcols(k),:),'MarkerSize',5);
+    plot([j,j],[M-S,M+S],'-','Color',colorblind(plotcols(k),:));
 end
 xticks(1:25);
 xticklabels([journals_unique{jix([1:25],1),1}]);
+xtickangle(60);
 set(gca,'FontSize',12);
 ylabel('Proportion criteria met');
 set(gcf,'Position',[1,50,1200,600]);
@@ -316,7 +320,7 @@ print('Chipchase_study_reporting_journal_means.png','-dpng');
 close(4);
 
 
-%% COMPARE CLINICAL NEUROPHYSIOLOGY WITH OTHERS_____________________________
+%% COMPARE CLINICAL NEUROPHYSIOLOGY WITH OTHERS____________________________
 % top k journals, with 10 or more papers (1 = Clin Neurophysiol, which published the Chipchase questionnaire)
 k = 10;
 M = cell2mat(journals_unique(jix(1:k,1),3));                                % means
@@ -341,7 +345,7 @@ T = diff ./ (Sp .* sqrt((1./N(x)) + (1./N(y))));                            % un
 p = 2.* (1-(tcdf(abs(T),N(1) + N(y)-2)));                                   % two-tailed p-value with x
 
 
-%% COMPARE CLINICAL NEUROPHYSIOLOGY WITH PRE-CHIPCHASE REPOTING_____________
+%% COMPARE CLINICAL NEUROPHYSIOLOGY WITH PRE-CHIPCHASE REPOTING____________
 CN = find(journals=="Clin Neurophysiol");
 pre = d(CN,3)>=2007 & d(CN,3)<2012;                                         % pre = 2007 - 2011, 5 years = 12 papers
 post = d(CN,3)>=2013;                                                       % post = 2013 - max = 2017, 5 years = 15 papers
@@ -351,9 +355,11 @@ S1 = std(d(CN(pre),1));
 S2 = std(d(CN(post),1));
 N1 = sum(pre);
 N2 = sum(post);
+DF = N1+N2-2;
 
 % unpaired t-test pre vs post publication of the Chipchase (2012) checklist
 diff = M2 - M1;
-Sp = sqrt((((N1-1).*S1.^2) + ((N2-1).*S2.^2)) ./ (N1 + N2 - 2));
+Sp = sqrt((((N1-1).*S1.^2) + ((N2-1).*S2.^2)) ./ DF);
 T = diff ./ (Sp.*sqrt( (1./N1) + (1./N2)));
-p = 2.* (1-(tcdf(abs(T),N1+N2-2)));
+p = 2.* (1-(tcdf(abs(T),DF)));
+disp([' Before versus after the Chipchase (2012) checklist, t(',int2str(DF),')=',num2str(T,3),', p=',num2str(p,3)]);

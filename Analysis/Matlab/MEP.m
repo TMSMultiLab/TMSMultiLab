@@ -63,7 +63,7 @@
 %     mep.minlat	latency of lowest peak, ms
 %     mep.maxamp	amplitude of highest peak, mV
 %     mep.maxlat	latency of highest peak, ms
-%     mep.onset	latency of mep onset, ms
+%     mep.onset	        latency of mep onset, ms
 %     mep.offset	latency of mep offset, ms
 %     mep.duration	duration of mep, from onset to offset, ms
 %     mep.baseline	mean, max, min, SD, RMS of baseline
@@ -113,7 +113,7 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         options.threshold.type = 'peak';                                      % use the min and max peaks to calculate an MEP (no other options, no onset/offset)
         options.window = [NaN, NaN,NaN ];                                     % default window to find MEPs after TMS
         % plotting options
-        options.plot = true;                                                  % plot the data
+        options.plot = false;                                                 % plot the data
         options.figure = 1;                                                   % Figure 1
         options.subplot = NaN;                                                % no sub-plots
         options.title = '';                                                   % no title
@@ -151,7 +151,7 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
     
     %% check the options.plot parameter__________________________________
     if ~isfield(options,'plot') || ~islogical(options.plot)
-        options.plot = true;
+        options.plot = false;
         if ~isfield(options,'figure') || ~isfinite(options.figure)
             options.figure = 1;
         end
@@ -374,11 +374,11 @@ function [mep, options] = MEP(data, samplehz, pulsetime, options)
         xrng = [options.baseline(1), options.baseline(2)];
         plot(xrng, [mep.baseline.mean,mep.baseline.mean], 'k-');
         for s=1:5 % standard deviation lines
-	        plot(xrng, [mep.baseline.mean + s.*mep.baseline.sd, mep.baseline.mean + s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
-	        plot(xrng, [mep.baseline.mean - s.*mep.baseline.sd, mep.baseline.mean - s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
+	    plot(xrng, [mep.baseline.mean + s.*mep.baseline.sd, mep.baseline.mean + s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
+	    plot(xrng, [mep.baseline.mean - s.*mep.baseline.sd, mep.baseline.mean - s.*mep.baseline.sd], '--', 'color', [0,0,0]+0.15.*s);
         end
-	    plot(xrng, [mep.baseline.max, mep.baseline.max], 'k:');
-	    plot(xrng, [mep.baseline.min, mep.baseline.min], 'k:');
+	plot(xrng, [mep.baseline.max, mep.baseline.max], 'k:');
+	plot(xrng, [mep.baseline.min, mep.baseline.min], 'k:');
         a=axis;
 	
         % plot x- and y-axis lines

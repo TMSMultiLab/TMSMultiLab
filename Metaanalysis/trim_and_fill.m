@@ -118,7 +118,7 @@ function [filled, stats] = trim_and_fill(x, s, side, estimator, method, verbose)
     k = numel(x);                                                           % how many studies entered
     k0 = -1;                                                                % set the N suppressed studies to -1
     k0_tmp = 0;                                                             % current estimate of N suppressed studies
-    iterations = 10;                                                        % how many times to try?
+    iterations = 100;                                                       % how many times to try?
     i = 0;                                                                  % current iteration
 
 
