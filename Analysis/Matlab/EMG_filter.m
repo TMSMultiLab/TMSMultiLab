@@ -11,7 +11,7 @@
 %	changed defaults to 20-500Hz
 % 	added order as an option, default to 1st
 
-function filtered=EMG_filter(data,samplehz,order,lowhz,highhz)
+function filtered=EMG_filter(data, samplehz, order, lowhz, highhz)
     if nargin==2
         order=1;
         lowhz=20;
@@ -28,9 +28,7 @@ function filtered=EMG_filter(data,samplehz,order,lowhz,highhz)
         if isempty(lowhz)
             lowhz=20;
         end
-        if isempty(highhz)
-            highhz=500;
-        end
+        highhz=500;
     end
     if lowhz==0
         lowhz=0.01;

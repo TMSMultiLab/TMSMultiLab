@@ -11,10 +11,10 @@ function stats = meta_analysis(Ms, SEs, alpha, comparison, method)
     %% PROCESS THE INPUTS________________________________________________
     switch nargin
         case 0
-        error('meta_analysis: requires at least two mx1 arrays: means and variances');
+        error('meta_analysis: requires at least two mx1 arrays: means and SEs');
         
         case 1
-            error('meta_analysis: requires at least two mx1 arrays: means and variances');
+            error('meta_analysis: requires at least two mx1 arrays: means and SEs');
         
         case 2
             alpha = 0.05;
@@ -122,7 +122,7 @@ function stats = meta_analysis(Ms, SEs, alpha, comparison, method)
             stats.FE_CI(2) =  stats.FE_Mean - (stats.FE_SE .* norminv(alpha./2));           % 6) FE meta CI = M - (SE * norminv(alpha))
             stats.FE_Z = (stats.FE_Mean - comparison) ./ stats.FE_SE;                       % 7) FE meta Z-score = M ./ SE
             stats.FE_p = (1-normcdf(abs(stats.FE_Z))).*2;                                   % 8) FE meta p-value from abs Z-score
-        
+	    stats.RE_TauSquared = 0;                                                        % needed for regression test below        
         
         %% Categorisation according to Veroniki et al (2015)_____________
         
@@ -284,12 +284,14 @@ function stats = meta_analysis(Ms, SEs, alpha, comparison, method)
     
     %% FUNNEL PLOT ASYMMETRY & DIAGNOSTICS_________________________________
     
-    % trim and fill________________________________________________________
-    
     % rank test (Kendall's Tau)____________________________________________
     
-    % regression test (Egger's sei)________________________________________
-    
+    % regression test (Egger's sei)________________________________________   
+    if stats.k>1
+        stats.RegTest_Z = stats.Ms ./ sqrt(stats.Vs +  stats.RE_TauSquared);                 % y-axis, Z(i) = y(i) / sqrt(v(i) + Tau^2)
+        stats.RegTest_X = 1 ./ sqrt(stats.Vs +  stats.RE_TauSquared);                        % x-axis, x(i) = 1 / sqrt(v(i) + Tau^2)
+        stats.RegTest_fit = fitlm(stats.RegTest_X,stats.RegTest_Z);                          % fit linear model of Z on X
+    end
     % Fail-safe N (Rosenthal's file drawer analysis)_______________________
     
 end
