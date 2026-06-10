@@ -12,8 +12,10 @@
 %       eg: 'k';  [0,1,0];  ['k';'r';'g';...];  [0,0,1;0,1,0;1,0,0;...]
 %   opts.linewidth = 2 - linewidth for study lines
 %   opts.xlims = [minx, maxx] - x-axis limits
+%
+% outputs opts and stats - the meta-analysis stats
 
-function opts = forest_plot(Ms, SEs, labels, opts)
+function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
 
 
     %% PROCESS THE INPUT ARGUMENTS_________________________________________
@@ -46,11 +48,73 @@ function opts = forest_plot(Ms, SEs, labels, opts)
         opts.linestyle = '-';                                               % linestyle for studies
         opts.color = 'k';                                                   % linecolour for studies
         opts.linewidth = 2;                                                 % linewidth for studies
+	opts.fontsize = [16,16];                                            % fontsize for [Figure, Axes] (Labels = 0.85*)
+	opts.order = 1:numel(Ms);                                           % default order
+	opts.sfs = 3;                                                       % significant figures in the text labels
     end
 
-    %% IF SOME OF THE OPTIONS ARE SPECIFIED________________________________
 
-
+    %% IF SOME OF THE OPTIONS ARE NOT SPECIFIED____________________________
+    if ~isfield(opts,'null')
+        opts.null = 0;                                                      % default null = 0
+    end
+    if ~isfield(opts,'alpha')
+        opts.alpha = 0.05;                                                  % default alpha = 0.05
+    end
+    if ~isfield(opts,'symbol')
+        opts.symbol = 's';                                                  % symbol for studies
+    end
+    if ~isfield(opts,'markersize')
+        opts.markersize = 12;                                               % default (mean) MarkerSize property
+    end
+    if ~isfield(opts,'linestyle')
+        opts.linestyle = '-';                                               % linestyle for studies
+    end
+    if ~isfield(opts,'color')
+        opts.color = 'k';                                                   % linecolour for studies
+    end
+    if ~isfield(opts,'linewidth')
+        opts.linewidth = 2;                                                 % linewidth for studies
+    end
+    if ~isfield(opts,'fontsize')
+	opts.fontsize = [16,16];                                            % fontsize for [Figure, Axes] (Labels = 0.85*)
+    end
+    if ~isfield(opts,'sort')
+	opts.sort = 'default';                                              % default sort = 1:k
+    end    
+    if ~isfield(opts,'sfs')
+	opts.sfs = 3;                                                       % significant figures in the text labels
+    end 
+    
+    
+    %% ORDER THE DATA______________________________________________________
+    switch opts.sort
+        case 'default'
+	    jx = 1:numel(Ms);                                               % no sorting - order of arrival
+	case 'ascending'
+	    [~, jx] = sortrows(Ms,'ascend');                                % ascending order of means
+	case 'descending'
+	    [~, jx] = sortrows(Ms,'decend');                                % descending order of means
+	case 'custom'
+	    if ~isfield(opts,'order')
+	        warning('forest_plot: no sort order specified, defaulting to input');
+		jx = 1:numel(Ms);
+	    else
+	        if numel(opts.order) ~= numel(Ms)
+		    warning('forest_plot: sort order different length to data, defaulting to input');
+		    jx = 1:numel(Ms);
+		else
+	            jx = opts.order;
+		end
+	    end
+    end
+    Ms = Ms(jx);
+    SEs = SEs(jx);
+    labels = labels(jx);
+    if size(opts.color,1)==numel(Ms)
+        opts.color = opts.color(jx,:);
+    end
+    
     %% FOR TESTING_________________________________________________________
     %opts.color = rand(numel(Ms),3);
     %opts.symbol = ['s';'o';'d';'p';'h';'^';'v';'<';'>'];
@@ -59,6 +123,11 @@ function opts = forest_plot(Ms, SEs, labels, opts)
 
     %% INTERIM NUMBER OF STUDIES___________________________________________
     k = numel(Ms);                                                          % number of studies
+    if k>13
+        opts.markersize = opts.markersize  .* 13./k;                        % adjust mean size of markers
+        opts.linewidth = opts.linewidth    .* 13./k;                        % adjust linewidth size
+        opts.fontsize(2) = opts.fontsize(2).* 13./k;                        % adjust fontsize for studies
+    end
 
 
     %% CREATE COLOUR VECTOR________________________________________________
@@ -107,15 +176,16 @@ function opts = forest_plot(Ms, SEs, labels, opts)
         Ms = Ms(ix);
         SEs = SEs(ix);
         labels = labels(ix);
-        opts.color = opts.color([ix;true],:);                               % last one for the mean
+        opts.color = opts.color([ix;true],:);                               % new list of colours + the last one for the mean
+        opts.symbol = opts.color(ix,:);                                     % new list of symbols
+	opts.linestyle = opts.linestyle(ix,:);                              % new list of linestyles
     end
 
 
     %% COMPUTE CONSTANTS___________________________________________________
     k = numel(Ms);                                                          % number of studies
     opts.conf = 100.*(1-opts.alpha);                                        % calculate confidence level
-    opts.scale = 1.5 - (SEs - min(SEs)) ./ (max(SEs)-min(SEs));             % scale the SEs for marker size adjustments
-
+    %opts.scale = 1.5 - (SEs - min(SEs)) ./ (max(SEs)-min(SEs));             % scale the SEs for marker size adjustments
 
     %% COMPUTE CONFIDENCE INTERVALS________________________________________
     CIs = SEs .* norminv(1-(opts.alpha./2));
@@ -127,8 +197,9 @@ function opts = forest_plot(Ms, SEs, labels, opts)
     M_mean = stats.RE_Mean;
     M_SE = stats.RE_SE;
     M_CI = M_SE .* norminv(1-(opts.alpha./2));
+    opts.scale = 0.5 + (stats.Ws - min(stats.Ws)) ./ (max(stats.Ws)-min(stats.Ws)); % scale the SEs for marker size adjustments between 0.5 and 1.5 x the default
 
-    fmt = ['%.',int2str(3 - ceil(log10(M_mean))),'f'];                      % format for decimal places in number outputs?
+    fmt = ['%.',int2str(opts.sfs - ceil(log10(M_mean))),'f'];               % format for decimal places in number outputs?
     % 100-1000    3   0dp
     % 10-100      2   1dp
     % 1-10        1   2dp
@@ -140,6 +211,7 @@ function opts = forest_plot(Ms, SEs, labels, opts)
     figure();
     hold on;
     set(gcf, 'Color', 'w');
+    set(gca,'FontSize',opts.fontsize(1));
     box on;
     plot([opts.null,opts.null],[-1,k+1],'k-');                              % plot zero effect
     set(gca,'Position',[0.2,0.1,0.55,0.8]);
@@ -154,26 +226,26 @@ function opts = forest_plot(Ms, SEs, labels, opts)
         plot(Ms(n),k+1-n,opts.symbol(n,:),'Color',opts.color(n,:),'MarkerSize',opts.markersize.*opts.scale(n),'MarkerFaceColor',opts.color(n,:));
 
         % LABELS ON THE LEFT
-        text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, k+1-n, labels{n}, 'Color',opts.color(n,:));
+        text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, k+1-n, labels{n}, 'Color',opts.color(n,:),'FontSize',opts.fontsize(2).*0.85);
 
         % EFFECTS ON THE RIGHT
-        text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, k+1-n, [sprintf(fmt,Ms(n)),' [',sprintf(fmt,Ms(n)-CIs(n)),', ',sprintf(fmt,Ms(n)+CIs(n)),']'], 'Color',opts.color(n,:));
+        text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, k+1-n, [sprintf(fmt,Ms(n)),' [',sprintf(fmt,Ms(n)-CIs(n)),', ',sprintf(fmt,Ms(n)+CIs(n)),']'], 'Color',opts.color(n,:),'FontSize',opts.fontsize(2).*0.85);
     end
-    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, k+1, 'Study','FontAngle','Italic');
-    text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, k+1, ['Mean ',char(177),' ',int2str(opts.conf),'% CI'],'FontAngle','Italic');
+    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, k.*1.05, 'Study','FontAngle','Italic','FontSize',opts.fontsize(1).*0.85);
+    text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, k.*1.05, ['Mean ',char(177),' ',int2str(opts.conf),'% CI'],'FontAngle','Italic','FontSize',opts.fontsize(1).*0.85);
 
     % MEANS & CI
-    patch([M_mean-M_CI, M_mean, M_mean+M_CI, M_mean],[0, -0.25, 0, 0.25], opts.color(n+1,:), 'EdgeColor',opts.color(n+1,:));
+    patch([M_mean-M_CI, M_mean, M_mean+M_CI, M_mean],[0, -k.*0.02, 0, k.*0.02], opts.color(n+1,:), 'EdgeColor',opts.color(n+1,:));
 
     % LABEL ON THE LEFT 
-    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, 0, 'Mean', 'FontWeight','Bold', 'Color',opts.color(n+1,:));
+    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, 0, 'Mean', 'FontWeight','Bold', 'Color',opts.color(n+1,:),'FontSize',opts.fontsize(1).*0.85);
 
     % EFFECT ON THE RIGHT
-    text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, 0, [sprintf(fmt,M_mean),' [',sprintf(fmt,M_mean-M_CI),', ',sprintf(fmt,M_mean+M_CI),']'], 'FontWeight','Bold', 'Color',opts.color(n+1,:));
+    text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, 0, [sprintf(fmt,M_mean),' [',sprintf(fmt,M_mean-M_CI),', ',sprintf(fmt,M_mean+M_CI),']'], 'FontWeight','Bold', 'Color',opts.color(n+1,:),'FontSize',opts.fontsize(1).*0.85);
 
 
     %% FORMAT THE AXES_____________________________________________________
-    axis([opts.xlims,-0.5,k+0.5]);                                          % rescale the axes
+    axis([opts.xlims,-k.*0.05,k.*1.05]);                                    % rescale the axes
     xlabel('Effect size');                                                  % effect-size on X-axis
     yticks([]);                                                             % remove y-axis labels
 
