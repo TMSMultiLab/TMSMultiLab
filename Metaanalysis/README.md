@@ -17,7 +17,7 @@ Create a forest plot for a meta analysis. Calls the `meta_analysis.m` function
 
 `Ms` - a list of study means
 
-`SEs` - a list of study SEs (must be the same number of studies as `Ms`
+`SEs` - a list of study SEs (must be the same number of studies as `Ms`)
 
 `options` - many!
 
@@ -28,7 +28,7 @@ Run a meta-analysis on a set of study Means and SEs.
 
 `Ms` - a list of study means
 
-`SEs` - a list of study SEs (must be the same number of studies as `Ms`
+`SEs` - a list of study SEs (must be the same number of studies as `Ms`)
 
 `options` - many!
 
