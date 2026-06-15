@@ -219,7 +219,7 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
 
     %% COMPUTE CONSTANTS___________________________________________________
     k = numel(Ms);                                                          % number of studies
-    l = numel(subgroups)-1;                                                 % extra lines to add for gaps between subgroups
+    l = numel(subgroups)-0.5;                                               % extra lines to add for gaps between subgroups & after last one
     opts.conf = 100.*(1-opts.alpha);                                        % calculate confidence level
 
 
@@ -281,31 +281,26 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
 	    tmp = meta_analysis(ms, ses, opts.alpha, 0, 'DL');              % meta-analysis using Dersimonian-Laired method
             m_mean = tmp.RE_Mean;                                           % meta-analysis mean to plot                
             m_CI = tmp.RE_SE .* norminv(1-(opts.alpha./2));                 % meta-analysis CI to plot
-	    
 	    top = k + l - s +2 - idx(1) + 0.5;
-	    bottom = k + l - s +2 - idx(end) - 0.5;
-	    
-            patch([m_mean-m_CI, m_mean-m_CI, m_mean+m_CI, m_mean+m_CI], [bottom, top, top, bottom], opts.color(idx(1),:), 'FaceAlpha', 0.075, 'EdgeAlpha', 0.075);% shaded bar
-	    
-            plot([m_mean, m_mean], [bottom, top], ':', 'Color', opts.color(idx(1),:));                                                                          % dotted line
-	    
+	    bottom = k + l - s +2 - idx(end) - 0.75;
+            patch([m_mean-m_CI, m_mean-m_CI, m_mean+m_CI, m_mean+m_CI], [bottom, top, top, bottom], opts.color(idx(1),:), 'FaceAlpha', 0.075, 'EdgeAlpha', 0.075);           % shaded bar
+            plot([m_mean, m_mean], [bottom, top], ':', 'Color', opts.color(idx(1),:));                                                                                       % dotted line
+            patch([m_mean-m_CI, m_mean, m_mean+m_CI, m_mean], [bottom, bottom-(k.*0.01), bottom, bottom+(k.*0.01)], opts.color(idx(1),:), 'EdgeColor', opts.color(idx(1),:));% solid diamond
+            text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, bottom, 'Mean', 'FontWeight','Bold', 'Color', opts.color(idx(1),:),'FontSize', opts.fontsize(1).*0.85);
+            text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, bottom, [sprintf(fmt,m_mean),' [',sprintf(fmt,m_mean-m_CI),', ',sprintf(fmt,m_mean+m_CI),']'], 'FontWeight', 'Bold', 'Color', opts.color(idx(1),:), 'FontSize', opts.fontsize(1).*0.85);
         end
     end
 
-    % GRAND MEAN & CI______________________________________________________
-    patch([M_mean-M_CI, M_mean-M_CI, M_mean+M_CI, M_mean+M_CI], [-k.*0.05, (k+l).*1.05, (k+l).*1.05, -k.*0.05], opts.color(n+1,:), 'FaceAlpha',0.075, 'EdgeAlpha',0.075);% shaded bar
-    plot([M_mean, M_mean], [-k.*0.05, (k+l).*1.05], '--', 'Color', opts.color(n+1,:));                                                                                 % dotted line
-    patch([M_mean-M_CI, M_mean, M_mean+M_CI, M_mean], [0, -k.*0.02, 0, k.*0.02], opts.color(n+1,:), 'EdgeColor', opts.color(n+1,:));                                   % solid diamond
-
-    % MEAN LABEL ON THE LEFT_______________________________________________
-    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, 0, 'Mean', 'FontWeight','Bold', 'Color', opts.color(n+1,:),'FontSize', opts.fontsize(1).*0.85);
-
-    % MEAN EFFECT ON THE RIGHT_____________________________________________
+    % GRAND MEAN, CI, & LABELS_____________________________________________
+    patch([M_mean-M_CI, M_mean-M_CI, M_mean+M_CI, M_mean+M_CI], [-k.*0.075, (k+l).*1.05, (k+l).*1.05, -k.*0.075], opts.color(n+1,:), 'FaceAlpha',0.075, 'EdgeAlpha', 0.075);% shaded bar
+    plot([M_mean, M_mean], [-k.*0.075, (k+l).*1.05], '--', 'Color', opts.color(n+1,:));                                                                                     % dotted line
+    patch([M_mean-M_CI, M_mean, M_mean+M_CI, M_mean], [0, -k.*0.02, 0, k.*0.02], opts.color(n+1,:), 'EdgeColor', opts.color(n+1,:));                                        % solid diamond
+    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, 0, 'Mean', 'FontWeight','Bold', 'Color', opts.color(n+1,:),'FontSize', opts.fontsize(1).*0.85);                         % Mean label on the left
     text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, 0, [sprintf(fmt,M_mean),' [',sprintf(fmt,M_mean-M_CI),', ',sprintf(fmt,M_mean+M_CI),']'], 'FontWeight', 'Bold', 'Color', opts.color(n+1,:), 'FontSize', opts.fontsize(1).*0.85);
 
 
     %% FORMAT THE AXES_____________________________________________________
-    axis([opts.xlims, -k.*0.05, (k+l).*1.05]);                              % rescale the axes
+    axis([opts.xlims, -k.*0.075, (k+l).*1.05]);                             % rescale the axes
     xlabel('Effect size');                                                  % effect-size on X-axis
     yticks([]);                                                             % remove y-axis labels
     set(gcf, 'Position', opts.figureposition);                              % set the figure position
