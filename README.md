@@ -52,6 +52,13 @@ If you're planning to make major changes to the code, or to contribute new mater
    * <code>git commit -m 'latest updates to myfile.txt'</code> - commit the changes to the repository, with a message
    * <code>git push</code> - push all the changes up
      * you will need to give your <code>username</code> (not email!) and a <code>personal access token</code>
-     * to generate a PAT, go to your profile (click your avatar) -> <code>settings</code> -> <code><>developer settings</code> (at the bottom-left) -> <code>Personal Access Tokens</code> -> <code>Tokens (classic)</code> -> for the <code>scope</code> choose at least the <code>repo</code> settings. It will give you a long passcode - copy and paste as the 'password' when requested
+     * to generate a PAT:
+        * go to your profile (click your avatar) ->
+        * <code>settings</code> ->
+        * <code><>developer settings</code> (at the bottom-left) ->
+        * <code>Personal Access Tokens</code> ->
+        * <code>Tokens (classic)</code> ->
+        * for the <code>scope</code> choose at least the <code>repo</code> settings, then generate.
+        * It will give you a long passcode - copy and paste as the 'password' when requested
 6. Keep pulling and pushing regularly..!
 7. When you're ready to share the developments from your repository into the main TMSMultiLab repository,  you'll need to do a <code>Pull request</code>
