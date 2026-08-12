@@ -1,4 +1,15 @@
 function stats = meta_analysis(Ms, SEs, alpha, comparison, method)
+% function stats = meta_analysis(Ms, SEs[, alpha] [, comparison] [, method])
+% INPUTS
+%   Ms - mx1 array of means
+%   SEs - mx1 array of SEs
+%   alpha (optional) - alpha level, defaults to 0.05
+%   comparison (optional) - what to compare the means against, defaults to 0
+%   method (optional) - which method? defaults to Dersimonian-Laird (also:
+%     'Fixed effects'
+%     (many others...)
+%     Maximum likelihood is not (yet) available
+%
 % https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-10
 % https://methods.cochrane.org/sites/methods.cochrane.org.statistics/files/uploads/SMG_training_course_2016/cochrane_smg_training_2016_viechtbauer.pdf
 % https://jasp-stats.org/2017/11/15/meta-analysis-jasp/

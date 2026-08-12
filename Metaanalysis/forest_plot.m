@@ -19,7 +19,7 @@
 %   opts.axisposition = [0.2, 0.1, 0.55, 0.8]- default size of the main plot, allowing for text labels
 %   opts.figureposition = [1, 50, 800, 800] - default figure size
 %
-% outputs opts and stats - the meta-analysis stats
+% outputs opts (as above, some modified, some new) and stats - the meta-analysis stats (see meta_analysis function for details)
 
 function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
 
@@ -46,33 +46,23 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
         labels = append('Study ',string(1:numel(Ms)));                      % use numbers to ID the studies
     end
     if nargin<4 || isempty(opts)
-        opts.subgroups = ones(numel(Ms),1);                                 % default = one subgroup = whole group
-	opts.sort = 'default';                                              % default sort = 1:k
-	opts.order = 1:numel(Ms);                                           % default order
-        opts.null = 0;                                                      % default null = 0
-        opts.alpha = 0.05;                                                  % default alpha = 0.05
-        opts.symbol = 's';                                                  % symbol for studies
-        opts.markersize = 12;                                               % default (mean) MarkerSize property
-        opts.linestyle = '-';                                               % linestyle for studies
-        opts.color = 'k';                                                   % linecolour for studies
-        opts.linewidth = 2;                                                 % linewidth for studies
-	opts.fontsize = [16,16];                                            % fontsize for [Figure, Axes] (Labels = 0.85*)
-	opts.axisposition = [0.2, 0.1, 0.55, 0.8];                          % size of the plot (allows for text on left & right)
-	opts.figureposition = [1, 51, 750, 800];                            % default figure size
-	opts.sfs = 3;                                                       % significant figures in the text labels
+        opts.color = 'k';                                                   % initialise options here, then complete below...
     end
-
 
     %% IF SOME OF THE OPTIONS ARE NOT SPECIFIED____________________________
     if ~isfield(opts,'subgroups')
         opts.subgroups = ones(numel(Ms),1);                                 % default subgroups = mx1
+        opts.subgrouplabels = '';                                           % empty subgroup labels
+    end
+    if ~isfield(opts,'subgrouplabels')
+        opts.subgrouplabels = '';                                           % empty subgroup labels
     end
     if numel(opts.subgroups) ~= numel(Ms)
         warning('forest_plot: wrong number of subgroups enteredl, defaulting to none');
         opts.subgroups = ones(numel(Ms),1);                                 % default subgroups = mx1
     end
     if ~isfield(opts,'sort')
-	opts.sort = 'default';                                              % default sort = 1:k
+        opts.sort = 'default';                                              % default sort = 1:k
     end 
     if ~isfield(opts,'null')
         opts.null = 0;                                                      % default null = 0
@@ -96,45 +86,55 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
         opts.linewidth = 2;                                                 % linewidth for studies
     end
     if ~isfield(opts,'fontsize')
-	opts.fontsize = [16, 16];                                           % fontsize for [Figure, Axes] (Labels = 0.85*)
+        opts.fontsize = [16, 16];                                           % fontsize for [Figure, Axes] (Labels = 0.85*)
     end   
     if ~isfield(opts,'axisposition')
-	opts.axisposition = [0.2, 0.1, 0.55, 0.8];                          % fontsize for [Figure, Axes] (Labels = 0.85*)
+        opts.axisposition = [0.24, 0.1, 0.54, 0.8];                         % size of the plot (allows for text on left & right)
     end 
     if ~isfield(opts,'figureposition')
-	opts.figureposition = [1, 51, 750, 800];                            % fontsize for [Figure, Axes] (Labels = 0.85*)
-    end     
+        opts.figureposition = [1, 51, 750, 800];                            % default figure size
+    end    
+    if ~isfield(opts,'studyoffset')
+        opts.studyoffset = 0.42;                                            % default study text offset proportion
+    end  
     if ~isfield(opts,'sfs')
-	opts.sfs = 3;                                                       % significant figures in the text labels
-    end 
+        opts.sfs = 3;                                                       % significant figures in the text labels
+    end
+    if ~isfield(opts,'scalek')
+        opts.scalek = 13;                                                   % if more than this number of studies, decrease fonts
+    end
     subgroups = unique(opts.subgroups);                                     % ordered list of subgroups
     if size(opts.subgroups,2)>size(opts.subgroups,1)
         opts.subgroups = opts.subgroups';                                   % rotate the subgroups
     else
         subgroups = subgroups';                                             % rotate the index to the subgroups
     end
+    if numel(opts.subgrouplabels) ~= subgroups
+        warning('forest_plot: wrong number of subgroup labels specified, defaulting to none');
+        opts.subgrouplabels = '';                                           % empty subgroup labels
+    end
     
     %% ORDER THE DATA______________________________________________________
     if numel(subgroups) == 1                                                % if only one subgroup specified
         switch opts.sort
             case 'default'
-	        jx = 1:numel(Ms);                                           % no sorting - order of arrival
-	    case 'ascending'
-	        [~, jx] = sortrows(Ms,'ascend');                            % ascending order of means
-	    case 'descending'
-	        [~, jx] = sortrows(Ms,'decend');                            % descending order of means
-	    case 'custom'
-	        if ~isfield(opts,'order')
-	            warning('forest_plot: no sort order specified, defaulting to input');
-		    jx = 1:numel(Ms);
-	        else
-	            if numel(opts.order) ~= numel(Ms)
-		        warning('forest_plot: sort order different length to data, defaulting to input');
-		        jx = 1:numel(Ms);
-		    else
-	                jx = opts.order;
-		    end
-	        end
+                jx = 1:numel(Ms);                                           % no sorting - order of arrival
+        case 'ascending'
+            [~, jx] = sortrows(Ms,'ascend');                            % ascending order of means
+        case 'descending'
+            [~, jx] = sortrows(Ms,'decend');                            % descending order of means
+        case 'custom'
+            if ~isfield(opts,'order')
+                warning('forest_plot: no sort order specified, defaulting to input');
+                jx = 1:numel(Ms);
+            else
+                if numel(opts.order) ~= numel(Ms)
+                    warning('forest_plot: sort order different length to data, defaulting to input');
+                    jx = 1:numel(Ms);
+                else
+                    jx = opts.order;
+                end
+            end
         end
     else
         [~, jx] = sortrows(opts.subgroups,'ascend');                        % ascending order of subgroups (no options here yet)
@@ -145,20 +145,14 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
     if size(opts.color,1)==numel(Ms)
         opts.color = opts.color(jx,:);
     end
-    
-    
-    %% FOR TESTING_________________________________________________________
-    %opts.color = rand(numel(Ms),3);
-    %opts.symbol = ['s';'o';'d';'p';'h';'^';'v';'<';'>'];
-    %opts.linestyle = ['- ';': ';'-.';'--';'- ';': ';'-.';'--';'- '];
 
 
     %% INTERIM NUMBER OF STUDIES___________________________________________
     k = numel(Ms);                                                          % number of studies
-    if k>13
-        opts.markersize = opts.markersize  .* 13./k;                        % adjust mean size of markers
-        opts.linewidth = opts.linewidth    .* 13./k;                        % adjust linewidth size
-        opts.fontsize(2) = opts.fontsize(2).* 13./k;                        % adjust fontsize for studies
+    if k>opts.scalek                                                        % for k>opts.scalek, adjust plot sizes...
+        opts.markersize = opts.markersize  .* opts.scalek./k;               % adjust mean size of markers
+        opts.linewidth = opts.linewidth    .* opts.scalek./k;               % adjust linewidth size
+        opts.fontsize(2) = opts.fontsize(2).* opts.scalek./k;               % adjust fontsize for studies
     end
 
 
@@ -210,16 +204,20 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
         labels = labels(ix);
         opts.color = opts.color([ix;true],:);                               % new list of colours + the last one for the mean
         opts.symbol = opts.color(ix,:);                                     % new list of symbols
-	opts.linestyle = opts.linestyle(ix,:);                              % new list of linestyles
-	if numel(opts.subgroups)==numel(Mx);
-	    opts.subgroups = opts.subgroups(ix);                            % new list of subgroups
-	end
+        opts.linestyle = opts.linestyle(ix,:);                              % new list of linestyles
+        if numel(opts.subgroups)==numel(Mx);
+            opts.subgroups = opts.subgroups(ix);                            % new list of subgroups
+        end
     end
 
 
     %% COMPUTE CONSTANTS___________________________________________________
     k = numel(Ms);                                                          % number of studies
-    l = numel(subgroups)-1;                                                 % extra lines to add for gaps between subgroups
+    if numel(subgroups)==1                                                  % extra lines to add for gaps between subgroups & after last one
+        l = 0.5;                                                            % 1 group = 0.5
+    else
+        l = numel(subgroups)+0.5;                                           % 2 groups = 2.5, 3 groups = 3.5, etc
+    end
     opts.conf = 100.*(1-opts.alpha);                                        % calculate confidence level
 
 
@@ -262,50 +260,55 @@ function [opts, stats] = forest_plot(Ms, SEs, labels, opts)
         plot(Ms(n), ypos, opts.symbol(n,:), 'Color', opts.color(n,:), 'MarkerSize', opts.markersize.*opts.scale(n), 'MarkerFaceColor', opts.color(n,:));
 
         % LABELS ON THE LEFT
-        text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, ypos, labels{n}, 'Color',opts.color(n,:),'FontSize',opts.fontsize(2).*0.85);
+        text(opts.xlims(1)-abs(diff(opts.xlims)).*opts.studyoffset, ypos, labels{n}, 'Color',opts.color(n,:),'FontSize',opts.fontsize(2).*0.85);
 
         % EFFECTS ON THE RIGHT
         text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, ypos, [sprintf(fmt,Ms(n)),' [',sprintf(fmt,Ms(n)-CIs(n)),', ',sprintf(fmt,Ms(n)+CIs(n)),']'], 'Color',opts.color(n,:), 'FontSize', opts.fontsize(2).*0.85);
     end
     
     % LEFT AND RIGHT COLUMN LABELS_________________________________________
-    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, (k+l).*1.075, 'Study', 'FontAngle', 'Italic', 'FontSize', opts.fontsize(1).*0.85);
+    text(opts.xlims(1)-abs(diff(opts.xlims)).*opts.studyoffset, (k+l).*1.075, 'Study', 'FontAngle', 'Italic', 'FontSize', opts.fontsize(1).*0.85);
     text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, (k+l).*1.075, ['Mean ',char(177),' ',int2str(opts.conf),'% CI'], 'FontAngle', 'Italic', 'FontSize', opts.fontsize(1).*0.85);
 
     % SUBGROUP MEANS_______________________________________________________
     if numel(subgroups) > 1
         for s = subgroups                                                   % for each unique subgroup number
-	    idx = find(opts.subgroups==s);                                  % index to means in this subgroup
+        idx = find(opts.subgroups==s);                                  % index to means in this subgroup
             ms = Ms(idx);                                                   % subgroup means
-	    ses = SEs(idx);                                                 % subgroup SEs
-	    tmp = meta_analysis(ms, ses, opts.alpha, 0, 'DL');              % meta-analysis using Dersimonian-Laired method
+        ses = SEs(idx);                                                 % subgroup SEs
+        tmp = meta_analysis(ms, ses, opts.alpha, 0, 'DL');              % meta-analysis using Dersimonian-Laired method
             m_mean = tmp.RE_Mean;                                           % meta-analysis mean to plot                
             m_CI = tmp.RE_SE .* norminv(1-(opts.alpha./2));                 % meta-analysis CI to plot
-	    
-	    top = k + l - s +2 - idx(1) + 0.5;
-	    bottom = k + l - s +2 - idx(end) - 0.5;
-	    
-            patch([m_mean-m_CI, m_mean-m_CI, m_mean+m_CI, m_mean+m_CI], [bottom, top, top, bottom], opts.color(idx(1),:), 'FaceAlpha', 0.075, 'EdgeAlpha', 0.075);% shaded bar
-	    
-            plot([m_mean, m_mean], [bottom, top], ':', 'Color', opts.color(idx(1),:));                                                                          % dotted line
-	    
+        top = k + l - s +2 - idx(1) + 0.5;                              % the top of this subgroup, for the shaded bar & line
+        bottom = k + l - s +2 - idx(end) - 0.75;                        % the bottom of this subgroup, for the shaded bar & line
+            patch([m_mean-m_CI, m_mean-m_CI, m_mean+m_CI, m_mean+m_CI], [bottom, top, top, bottom], opts.color(idx(1),:), 'FaceAlpha', 0.075, 'EdgeAlpha', 0.075);           % shaded bar
+            plot([m_mean, m_mean], [bottom, top], '--', 'Color', opts.color(idx(1),:));                                                                                      % broken line
+            patch([m_mean-m_CI, m_mean, m_mean+m_CI, m_mean], [bottom, bottom-(k.*0.01), bottom, bottom+(k.*0.01)], opts.color(idx(1),:), 'EdgeColor', opts.color(idx(1),:));% solid diamond
+        if numel(opts.subgrouplabels)>1
+            tmp = [opts.subgrouplabels{s},' mean'];
+        else
+            tmp = 'Mean';
+        end
+            text(opts.xlims(1)-abs(diff(opts.xlims)).*opts.studyoffset, bottom, tmp, 'FontWeight','Bold', 'Color', opts.color(idx(1),:),'FontSize', opts.fontsize(2).*0.85); % Mean label on the left, and data:
+        text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, bottom, [sprintf(fmt,m_mean),' [',sprintf(fmt,m_mean-m_CI),', ',sprintf(fmt,m_mean+m_CI),']'], 'FontWeight', 'Bold', 'Color', opts.color(idx(1),:), 'FontSize', opts.fontsize(2).*0.85);
         end
     end
 
-    % GRAND MEAN & CI______________________________________________________
-    patch([M_mean-M_CI, M_mean-M_CI, M_mean+M_CI, M_mean+M_CI], [-k.*0.05, (k+l).*1.05, (k+l).*1.05, -k.*0.05], opts.color(n+1,:), 'FaceAlpha',0.075, 'EdgeAlpha',0.075);% shaded bar
-    plot([M_mean, M_mean], [-k.*0.05, (k+l).*1.05], '--', 'Color', opts.color(n+1,:));                                                                                 % dotted line
-    patch([M_mean-M_CI, M_mean, M_mean+M_CI, M_mean], [0, -k.*0.02, 0, k.*0.02], opts.color(n+1,:), 'EdgeColor', opts.color(n+1,:));                                   % solid diamond
-
-    % MEAN LABEL ON THE LEFT_______________________________________________
-    text(opts.xlims(1)-abs(diff(opts.xlims)).*0.32, 0, 'Mean', 'FontWeight','Bold', 'Color', opts.color(n+1,:),'FontSize', opts.fontsize(1).*0.85);
-
-    % MEAN EFFECT ON THE RIGHT_____________________________________________
+    % GRAND MEAN, CI, & LABELS_____________________________________________
+    patch([M_mean-M_CI, M_mean-M_CI, M_mean+M_CI, M_mean+M_CI], [-k.*0.075, (k+l).*1.05, (k+l).*1.05, -k.*0.075], opts.color(n+1,:), 'FaceAlpha',0.075, 'EdgeAlpha', 0.075);% shaded bar
+    plot([M_mean, M_mean], [-k.*0.075, (k+l).*1.05], '--', 'Color', opts.color(n+1,:));                                                                                     % dotted line
+    patch([M_mean-M_CI, M_mean, M_mean+M_CI, M_mean], [0, -k.*0.02, 0, k.*0.02], opts.color(n+1,:), 'EdgeColor', opts.color(n+1,:));                                        % solid diamond
+    if numel(opts.subgrouplabels)>1
+        tmp = 'Overall mean';
+    else
+        tmp = 'Mean';
+    end
+    text(opts.xlims(1)-abs(diff(opts.xlims)).*opts.studyoffset, 0, tmp, 'FontWeight','Bold', 'Color', opts.color(n+1,:),'FontSize', opts.fontsize(1).*0.85);                % Mean label on the left, and data:
     text(opts.xlims(2)+abs(diff(opts.xlims)).*0.02, 0, [sprintf(fmt,M_mean),' [',sprintf(fmt,M_mean-M_CI),', ',sprintf(fmt,M_mean+M_CI),']'], 'FontWeight', 'Bold', 'Color', opts.color(n+1,:), 'FontSize', opts.fontsize(1).*0.85);
 
 
     %% FORMAT THE AXES_____________________________________________________
-    axis([opts.xlims, -k.*0.05, (k+l).*1.05]);                              % rescale the axes
+    axis([opts.xlims, -k.*0.075, (k+l).*1.05]);                             % rescale the axes
     xlabel('Effect size');                                                  % effect-size on X-axis
     yticks([]);                                                             % remove y-axis labels
     set(gcf, 'Position', opts.figureposition);                              % set the figure position
