@@ -1,5 +1,8 @@
 %% Download and process the HandLab dataset P10_E14 for inclusion into the TMSMultiLab TestData set
 
+%% ADD LOCAL TMSMULTILAB REPOSITORY_________________________________________
+addpath(genpath('/var/www/html/TMSMultiLab'));
+
 %% RETRIEVE DATA FROM LOCAL DIRECTORY_______________________________________
 load('/var/www/html/HandLab/P10_Imitation/P10_E14_BrainConnectivity/data/group/P10_E14_group_data.mat');
 
@@ -11,9 +14,9 @@ load('/var/www/html/HandLab/P10_Imitation/P10_E14_BrainConnectivity/data/group/P
 
 
 %% REMOVE UNNEEDED VARIABLES________________________________________________
-clear CI M MEPmax MEPmin N N2 N1 S SE X XS XSE ans autolatency b bs c cb ci;
-clear cols colsnum d d1 d2 data diffs ds e f folder fonts fs hl_dir i id j;
-clear latency latnum lines m m1 markers maxmep mep mpos mx o p r s symbols t;
+clear CI M MEPmax MEPmin N N2 N1 Ns S SE X XCI XS XSE ans autolatency b bs c cb ci;
+clear cols colsnum d d1 d2 data diffs ds e f folder fonts fs hl_dir i id ix j;
+clear latency latnum lines m m1 markers maxmep mep mpos mx o os p po r s symbols t;
 clear trials trials2 trig trigchan triglev tmss v ylimits xrange xrange2;
 
 
@@ -36,8 +39,8 @@ clear trials trials2 trig trigchan triglev tmss v ylimits xrange xrange2;
                 % 3 = max ms
                 % 4 = min mV
                 % 5 = min ms
-                % 6 = onset1
-                % 7 = onset2
+                % 6 = latency human 1
+                % 7 = latency human 22
                 % 8 = auto-onsets: Bigoni et al (2022)
 		% 9 = 
                 %10 = 
@@ -86,12 +89,28 @@ for p = 1:12                                                % for each of 12 par
                         meta(n,13) = MEPs(7,1,t,m,s,I,c,p); % EMG RMS (baseline)
                         
                         %% LATENCY VARIABLES________________
-                        meta(n,14) = output(I,1,m,c,s,8,p); % Human latency estimate 1
-                        meta(n,15) = output(I,1,m,c,s,9,p); % Human latency estimate 2
-                        meta(n,16) = output(I,1,m,c,s,10,p);% Bigoni et al algorithm latency estimate
+                        meta(n,14) = output(I,1,m,c,s,6,p); % Human latency estimate 1
+                        meta(n,15) = output(I,1,m,c,s,7,p); % Human latency estimate 2
+                        meta(n,16) = output(I,1,m,c,s,8,p);% Bigoni et al algorithm latency estimate
                     end
                 end
             end
         end
     end
 end
+
+
+%% SAVE DATA TO LOCAL DIRECTORY_____________________________
+save('HandLab_P10_E14_data.txt', 'data', '-ascii');         % save main data file
+save('HandLab_P10_E14_meta.txt', 'meta', '-ascii');         % save meta data file
+
+
+%% CREATE TABLE WITH HEADERS________________________________
+reps = meta(:,2);
+muscles = ms(meta(:,3));
+sites = poss(meta(:,4));
+intensities = meta(:,5);
+conditions = cs(meta(:,6));
+participants = meta(:,7);
+metadata = table(meta(:,1), reps, muscles', sites', intensities, conditions', participants, meta(:,8), meta(:,9), meta(:,10), meta(:,11), meta(:,12), meta(:,13), meta(:,14), meta(:,15), meta(:,16));
+metadata.Properties.VariableNames = {'Dataset', 'Repetition', 'Muscle', 'TMS Site', 'TMS intensity', 'Condition', 'Participant', 'MEP min amp', 'MEP min lat', 'MEP max amp', 'MEP max lat', 'MEP P2P', 'RMS EMG', 'Latency: Human1', 'Latency: Human2', 'Latency: Bigoni'};
