@@ -1,14 +1,21 @@
 %% Download and process the HandLab dataset P10_E14 for inclusion into the TMSMultiLab TestData set
 
-% download data: % https://osf.io/2xytm/files/a2j8e
+%% RETRIEVE DATA FROM LOCAL DIRECTORY_______________________________________
+load('/var/www/html/HandLab/P10_Imitation/P10_E14_BrainConnectivity/data/group/P10_E14_group_data.mat');
 
-% Load data load('P10_E14_group_data.mat');
+% - - - OR - - -
+
+%% DOWNLOAD DATA____________________________________________________________
+% https://osf.io/2xytm/files/a2j8e
+% Load downloaded data: load('P10_E14_group_data.mat');
+
 
 %% REMOVE UNNEEDED VARIABLES________________________________________________
 clear CI M MEPmax MEPmin N N2 N1 S SE X XS XSE ans autolatency b bs c cb ci;
 clear cols colsnum d d1 d2 data diffs ds e f folder fonts fs hl_dir i id j;
 clear latency latnum lines m m1 markers maxmep mep mpos mx o p r s symbols t;
 clear trials trials2 trig trigchan triglev tmss v ylimits xrange xrange2;
+
 
 %% DESCRIPTION OF EXISTING DATASET__________________________________________
 % MAIN VARIABLES:
@@ -49,6 +56,7 @@ tmp = reshape(tmp, 1600, 20.*4.*2.*7.*2.*12);
 data = tmp';
 trials = size(data,1);
 meta = nan(trials, 16);
+
 
 %% FILL IN THE META-DATA IDENTIFIERS________________________
 n = 0;
