@@ -34,6 +34,8 @@ clear trials trials2 trig trigchan triglev tmss v ylimits xrange xrange2;
 		% 7 = RMS baseline (from -200 to -50ms - before TMS)
 
 % output = 7-dimensional matrix storing the Latencies: (Intensities x7, Epochs (post, pre), Muscles x4, Conditions (rest, pegboard), Sites (M1, SMG), Measures x12, Subjects x12
+% latencies were measured on the AVERAGE MEP across 20 trials within each condition -> all EMG data averaged, then MEP measured
+% 
 % 12 measures:  % 1 = intensity
                 % 2 = max mV
                 % 3 = max ms
@@ -91,7 +93,8 @@ for p = 1:12                                                % for each of 12 par
                         %% LATENCY VARIABLES________________
                         meta(n,14) = output(I,1,m,c,s,6,p); % Human latency estimate 1
                         meta(n,15) = output(I,1,m,c,s,7,p); % Human latency estimate 2
-                        meta(n,16) = output(I,1,m,c,s,8,p);% Bigoni et al algorithm latency estimate
+                        meta(n,16) = output(I,1,m,c,s,8,p); % Bigoni et al algorithm latency estimate
+			
                     end
                 end
             end
@@ -114,6 +117,4 @@ conditions = cs(meta(:,6));
 participants = meta(:,7);
 metadata = table(meta(:,1), reps, muscles', sites', intensities, conditions', participants, meta(:,8), meta(:,9), meta(:,10), meta(:,11), meta(:,12), meta(:,13), meta(:,14), meta(:,15), meta(:,16));
 metadata.Properties.VariableNames = {'Dataset', 'Repetition', 'Muscle', 'TMS Site', 'TMS intensity', 'Condition', 'Participant', 'MEP min amp', 'MEP min lat', 'MEP max amp', 'MEP max lat', 'MEP P2P', 'RMS EMG', 'Latency: Human1', 'Latency: Human2', 'Latency: Bigoni'};
-
 writetable(metadata, 'HandLab_P10_E14_meta.csv', 'FileType', 'csv');
-
