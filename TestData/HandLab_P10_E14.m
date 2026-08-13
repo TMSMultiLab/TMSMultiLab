@@ -16,7 +16,7 @@ load('/var/www/html/HandLab/P10_Imitation/P10_E14_BrainConnectivity/data/group/P
 %% REMOVE UNNEEDED VARIABLES________________________________________________
 clear CI M MEPmax MEPmin N N2 N1 Ns S SE X XCI XS XSE ans autolatency b bs c cb ci;
 clear cols colsnum d d1 d2 data diffs ds e f folder fonts fs hl_dir i id ix j;
-clear latency latnum lines m m1 markers maxmep mep mpos mx o os p po r s symbols t;
+clear latency latnum lines m markers maxmep mep mpos mx o os p po r s symbols t;
 clear trials trials2 trig trigchan triglev tmss v ylimits xrange xrange2;
 
 
@@ -108,7 +108,7 @@ save('HandLab_P10_E14_data.txt', 'data', '-ascii');         % save main data fil
 save('HandLab_P10_E14_meta.txt', 'meta', '-ascii');         % save meta data file
 
 
-%% CREATE TABLE WITH HEADERS________________________________
+%% CREATE METADATA TABLE WITH HEADERS_______________________
 reps = meta(:,2);
 muscles = ms(meta(:,3));
 sites = poss(meta(:,4));
@@ -118,3 +118,12 @@ participants = meta(:,7);
 metadata = table(meta(:,1), reps, muscles', sites', intensities, conditions', participants, meta(:,8), meta(:,9), meta(:,10), meta(:,11), meta(:,12), meta(:,13), meta(:,14), meta(:,15), meta(:,16));
 metadata.Properties.VariableNames = {'Dataset', 'Repetition', 'Muscle', 'TMS Site', 'TMS intensity', 'Condition', 'Participant', 'MEP min amp', 'MEP min lat', 'MEP max amp', 'MEP max lat', 'MEP P2P', 'RMS EMG', 'Latency: Human1', 'Latency: Human2', 'Latency: Bigoni'};
 writetable(metadata, 'HandLab_P10_E14_meta.csv', 'FileType', 'text');
+
+%% CREATE PARTICIPANTS TABLE WITH HEADERS___________________
+sex = {'M','F'};
+sex = sex(fem+1);
+handed = {'L', 'A', 'R'};
+handed = handed(han+1);
+participants = table(hs', age', sex', handed', hed(:,1), hed(:,2), rmt', amt', m1(:,1), m1(:,2), smg(:,1), smg(:,2));
+participants.Properties.VariableNames = {'ID', 'Age', 'Sex', 'Handedness', 'Nasion-Inion', 'Inter-tragus', 'RMT', 'AMT', 'Site1 lateral', 'Site1 anterior', 'Site2 lateral', 'Site2 anterior'};
+writetable(participants, 'HandLab_P10_E14_subjects.csv', 'FileType', 'text');
