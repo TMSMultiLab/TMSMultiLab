@@ -117,4 +117,4 @@ conditions = cs(meta(:,6));
 participants = meta(:,7);
 metadata = table(meta(:,1), reps, muscles', sites', intensities, conditions', participants, meta(:,8), meta(:,9), meta(:,10), meta(:,11), meta(:,12), meta(:,13), meta(:,14), meta(:,15), meta(:,16));
 metadata.Properties.VariableNames = {'Dataset', 'Repetition', 'Muscle', 'TMS Site', 'TMS intensity', 'Condition', 'Participant', 'MEP min amp', 'MEP min lat', 'MEP max amp', 'MEP max lat', 'MEP P2P', 'RMS EMG', 'Latency: Human1', 'Latency: Human2', 'Latency: Bigoni'};
-writetable(metadata, 'HandLab_P10_E14_meta.csv', 'FileType', 'csv');
+writetable(metadata, 'HandLab_P10_E14_meta.csv', 'FileType', 'text');
