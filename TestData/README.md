@@ -20,4 +20,7 @@ For the first dataset:
 * Subjects file (2D array, with one row per subject and one column per subject metadata variable)
 
 Future plans:
+* Include all available metadata from the [TMS-RAT](https://tms-rat.org) [notes here](https://github.com/TheHandLab/TMSMultiLab/edit/main/TestData/TMS-RAT.md)
+* Include all available metadata from the NIBS-DAS
+* Include all available metadata from NIBS-BIDS
 * Convert all data to BIDS format
