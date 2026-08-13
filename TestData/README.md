@@ -58,3 +58,7 @@ L) ConditioningIntensityMachine, ConditioningIntensityParticipant, Condition-Tes
 M) SEPFrequency/Repetitions, EEGMontage, EEGFeature, EEGValues
 
 N) BurstFrequency, WithinBurstPulses, BetweenBurstInterval, BurstNumber, BetweenTrainInterval, TrainNumber, TMSTaskInterval, RepeatNumber
+
+# NIBS-DAS metadata compliance
+
+# NIBS-BIDS metadata compliance
