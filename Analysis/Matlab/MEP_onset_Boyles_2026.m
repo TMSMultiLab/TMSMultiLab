@@ -73,8 +73,8 @@ function [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime
         options.error = 10.^-6;                                           % minimum possible ratio, to avoid dividing by zero
         options.ratiocutoff = 0.85;                                       % minimum post:pre derivative ratio relative to the peak ratio
         options.maxlatency = 35;                                          % maximum possible latency
-	options.derivcheck = 4;                                           % samples after the point to check for large derivatives
-	options.basederivSDs = 1.5;                                       % how many SDs for the baseline derivative cutoff?
+        options.derivcheck = 4;                                           % samples after the point to check for large derivatives
+        options.basederivSDs = 1.5;                                       % how many SDs for the baseline derivative cutoff?
         options.derivcheckwindowlength = 2;                               % multiply the peak-to-trough duration by this to set the derivative check window
         options.plot = false;                                             % don't plot data by default
     else
@@ -151,6 +151,7 @@ function [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime
     [amp4, lat4] = min(grandmean(start:finish));                          % minimum potential MEP peak in grand mean
     grandp2p = amp3-amp4;                                                 % potential MEP peak-to-peak in grand mean
     [grandamp, grandlat] = max(abs(grandmean(start:finish)));             % max overall peak in grandmean data
+	grandlat = grantlat + start;                                          % correct for start of window
     
     % in the baseline_____________________________________________________
     base.p2p = max(data(base.on:base.off)) - min(data(base.on:base.off));  % the peak-to-peak in the baseline
@@ -189,9 +190,8 @@ function [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime
             mufwd = mean(abs(diff(data(l+1:l+options.blocklength))));     % mean derivitive in front of sample
             mubwd = mean(abs(diff(data(l-1:-1:l-options.blocklength))));  % mean derivitive behind the sample
             R(l,1) = mufwd ./ (mubwd+options.error);                      % ratio of mean derivatives
-	    R(l,2) = sum(abs(diff(data(l+1:l+options.derivcheck)))>base.derivmean);% how many of these derivatives exceed the baseline mean?
-	    R(l,3) = mean(abs(diff(data(l+1:l+options.derivcheckwindowlength.*deltap2p))));% mean derivatives after the sample
-	    
+            R(l,2) = sum(abs(diff(data(l+1:l+options.derivcheck)))>base.derivmean);% how many of these derivatives exceed the baseline mean?
+            R(l,3) = mean(abs(diff(data(l+1:l+options.derivcheckwindowlength.*deltap2p))));% mean derivatives after the sample
         end
                     
         % if slope after timepoint > slope before -> possible onset_______
@@ -212,49 +212,49 @@ function [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime
         end
         
         % Initial slope - Derivatives of at least 3 of the first 4 samples after k exceed the baseline mean derivative for the current epoch (ensures that this captures genuine, consistent slope)
-	if R(Rprimary,2)<3
+        if R(Rprimary,2)<3
             onset = NaN;                                                   % not valid - derivatives are too low
         end
 	
         % Overall slope - For the window after k (width Dptp x 2), check that mean derivative is greater than baseline mean derivative + 1.5 SD (ensures that overall slope of section after onset is much greater than baseline, indicating a likely MEP)
-	if R(Rprimary,3)<base.derivcutoff
+        if R(Rprimary,3)<base.derivcutoff
             onset = NaN;                                                   % not valid - derivatives are too low
         end
 
 
         %% PROVIDE OUTPUT VARIABLES_______________________________________
-	if nargout>1
-	    stats.R = R;
-	    stats.Rcandidate = Rprimary;
-	    stats.Rcandidatems = Rprimaryms;
-	    stats.baseline = base;
-	end
+        if nargout>1
+            stats.R = R;
+            stats.Rcandidate = Rprimary;
+            stats.Rcandidatems = Rprimaryms;
+            stats.baseline = base;
+        end
 
 
         %% PLOT THE DATA?_________________________________________________
         if options.plot
             figure;
-	    subplot(2,1,1);                                               % top = the data
+            subplot(2,1,1);                                               % top = the data
             hold on;
             xrange = -tmstime : (1000./samplehz) : (samples-1)./(samplehz./1000) - tmstime;% the x-axis time labels
             plot([xrange(1),xrange(end)], [0,0], 'k-');                   % baseline mean
             plot(xrange, data, 'b-');                                     % plot the data
-	    a = axis;
-	    plot([-options.baseline(1),-options.baseline(1)], [a(3),a(4)], 'k--');% baseline start
-	    plot([-options.baseline(2),-options.baseline(2)], [a(3),a(4)], 'k--');% baseline end
-	    plot([options.searchwindow(1),options.searchwindow(1)], [a(3),a(4)], 'r--');% search window start
-	    plot([options.searchwindow(2),options.searchwindow(2)], [a(3),a(4)], 'r--');% search window end
-	    plot([onset,onset], [a(3),a(4)], 'b-');                       % onset detected
+            a = axis;
+            plot([-options.baseline(1),-options.baseline(1)], [a(3),a(4)], 'k--');% baseline start
+            plot([-options.baseline(2),-options.baseline(2)], [a(3),a(4)], 'k--');% baseline end
+            plot([options.searchwindow(1),options.searchwindow(1)], [a(3),a(4)], 'r--');% search window start
+            plot([options.searchwindow(2),options.searchwindow(2)], [a(3),a(4)], 'r--');% search window end
+            plot([onset,onset], [a(3),a(4)], 'b-');                       % onset detected
             ylabel('EMG amplitude, mV');
-	    axis([-options.baseline(1).*1.05,100,a(3),a(4)]);             % reset axis
+            axis([-options.baseline(1).*1.05,100,a(3),a(4)]);             % reset axis
 	    
-	    subplot(2,1,2);                                               % bottom = the diagnostics
-	    hold on;
-	    plot(xrange, R(:,1), 'k-');                                   % the derivative ratios tested
-	    plot([xrange(1),xrange(end)], [base.derivmean,base.derivmean], 'k--');% baseline mean derivative
-	    set(gca, 'YScale', 'log');
-	    a = axis;
-	    axis([-options.baseline(1).*1.05,100,a(3),a(4)]);             % reset axis
+            subplot(2,1,2);                                               % bottom = the diagnostics
+            hold on;
+            plot(xrange, R(:,1), 'k-');                                   % the derivative ratios tested
+            plot([xrange(1),xrange(end)], [base.derivmean,base.derivmean], 'k--');% baseline mean derivative
+            set(gca, 'YScale', 'log');
+            a = axis;
+            axis([-options.baseline(1).*1.05,100,a(3),a(4)]);             % reset axis
             xlabel('Time after TMS, ms');
             ylabel('Derivative ratio, A.U.');
         end
