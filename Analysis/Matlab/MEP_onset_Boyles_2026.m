@@ -149,7 +149,7 @@ function [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime
     [amp3, lat3] = max(grandmean(start:finish));                          % maximum potential MEP peak in grand mean
     [amp4, lat4] = min(grandmean(start:finish));                          % minimum potential MEP peak in grand mean
     grandp2p = amp3-amp4;                                                 % potential MEP peak-to-peak in grand mean
-    grandlat = min(lat3, lat4) + start;                                   % first peak latency in ms
+    [grandamp, grandlat] = max(abs(grandmean(start:finish)));             % max overall peak in grandmean data
     
     % in the baseline_____________________________________________________
     base.p2p = max(data(base.on:base.off));                                % the maximum peak-to-peak in the baseline
