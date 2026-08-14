@@ -1,5 +1,6 @@
-%% implement the Boyles et al. (2026) latency detection algorithm (https://doi.org/10.1038/s41598-026-61560-0)
-%
+%% Implement the Boyles et al. (2026) latency detection algorithm (https://doi.org/10.1038/s41598-026-61560-0)
+% Version 1.0, 14th August 2026, written by Nick Holmes @TheHandLab
+% 
 % usage:
 % [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime, grandmean [, options])
 %
