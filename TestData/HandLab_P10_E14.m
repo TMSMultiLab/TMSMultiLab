@@ -4,13 +4,22 @@
 addpath(genpath('/var/www/html/TMSMultiLab'));
 
 %% RETRIEVE DATA FROM LOCAL DIRECTORY_______________________________________
-load('/var/www/html/HandLab/P10_Imitation/P10_E14_BrainConnectivity/data/group/P10_E14_group_data.mat');
+%load('/var/www/html/HandLab/P10_Imitation/P10_E14_BrainConnectivity/data/group/P10_E14_group_data.mat');
 
 % - - - OR - - -
 
 %% DOWNLOAD DATA____________________________________________________________
-% https://osf.io/2xytm/files/a2j8e
-% Load downloaded data: load('P10_E14_group_data.mat');
+% https://osf.io/2xytm/files/8kajn
+% Load downloaded data:
+load('P10_E14_group_data.mat');
+
+
+%% CHECK SIZE OF LATENCY DATA_______________________________________________
+if size(output,6)==12
+    output = output(:,:,:,:,:,1:8,:);
+elseif size(output,6)<8
+    warning(' this is an older version of this dataset; please download again from https://osf.io/2xytm/files/8kajn')
+end
 
 
 %% REMOVE UNNEEDED VARIABLES________________________________________________
@@ -50,7 +59,7 @@ clear trials trials2 trig trigchan triglev tmss v ylimits xrange xrange2;
                 %12 = 
 
 
-%% RE-FORMAT DATA FOR NEW STRUCTURE__________________________________________
+%% RE-FORMAT DATA FOR NEW STRUCTURE_________________________________________
 % DATA: 2D array:       26880 trials x 1600 samples per trial
 % META-DATA: 2D array: 	26880 trials x 16 meta-data variables (1 datasetID, 2 trial, 3 muscle, 4 site, 5 intensity, 6 condition, 7 subject; 8 min-amp, 9 min-lat, 10 max-amp, 11 max-lat, 12 p2p, 13 rms, 14 latency1, 15 latency2, 16 latencyB)
 
@@ -63,11 +72,11 @@ trials = size(data,1);
 meta = nan(trials, 16);
 
 
-%% FILL IN THE META-DATA IDENTIFIERS________________________
+%% FILL IN THE META-DATA IDENTIFIERS_______________________________________
 n = 0;
 for p = 1:12                                                % for each of 12 participants
     for c = 1:2                                             % and each of 2 conditions
-        for I = 1:7	                                    % and each of 7 intensities
+        for I = 1:7	                                        % and each of 7 intensities
             for s = 1:2                                     % and each of two TMS sites
                 for m = 1:4                                 % and each of four muscles
                     for t = 1:20                            % and for each of 20 trials...
@@ -104,8 +113,8 @@ end
 
 
 %% SAVE DATA TO LOCAL DIRECTORY_____________________________
-save('HandLab_P10_E14_data.txt', 'data', '-ascii');         % save main data file
-save('HandLab_P10_E14_meta.txt', 'meta', '-ascii');         % save meta data file
+save('HandLab_P10_E14_data.txt', 'data', '-ascii');                         % save main data file
+save('HandLab_P10_E14_meta.txt', 'meta', '-ascii');                         % save meta data file
 
 
 %% CREATE METADATA TABLE WITH HEADERS_______________________
