@@ -72,7 +72,7 @@ trials = size(data,1);
 meta = nan(trials, 16);
 
 
-%% FILL IN THE META-DATA IDENTIFIERS_______________________________________
+%% FILL IN THE META-DATA IDENTIFIERS________________________________________
 n = 0;
 for p = 1:12                                                % for each of 12 participants
     for c = 1:2                                             % and each of 2 conditions
@@ -82,7 +82,7 @@ for p = 1:12                                                % for each of 12 par
                     for t = 1:20                            % and for each of 20 trials...
                         n = n+1;                            % increment the counter (1... 26880)
                         
-                        %% DESIGN VARIABLES_________________
+                        %% DESIGN VARIABLES_________________________________
                         meta(n,1) = 1;                      % dataset ID
                         meta(n,2) = t;                      % repetition number
                         meta(n,3) = m;                      % muscle
@@ -91,7 +91,7 @@ for p = 1:12                                                % for each of 12 par
                         meta(n,6) = c;                      % condition (rest, pegboard)
                         meta(n,7) = p;                      % participant number
                         
-                        %% EMG / MEP VARIABLES______________
+                        %% EMG / MEP VARIABLES______________________________
                         meta(n,8) = MEPs(2,1,t,m,s,I,c,p);  % MEP min peak amplitude
                         meta(n,9) = MEPs(3,1,t,m,s,I,c,p);  % MEP min peak latency
                         meta(n,10) = MEPs(4,1,t,m,s,I,c,p); % MEP max peak amplitude
@@ -99,7 +99,7 @@ for p = 1:12                                                % for each of 12 par
                         meta(n,12) = MEPs(6,1,t,m,s,I,c,p); % MEP amplitude (max-min)
                         meta(n,13) = MEPs(7,1,t,m,s,I,c,p); % EMG RMS (baseline)
                         
-                        %% LATENCY VARIABLES________________
+                        %% LATENCY VARIABLES________________________________
                         meta(n,14) = output(I,1,m,c,s,6,p); % Human latency estimate 1
                         meta(n,15) = output(I,1,m,c,s,7,p); % Human latency estimate 2
                         meta(n,16) = output(I,1,m,c,s,8,p); % Bigoni et al algorithm latency estimate
@@ -112,12 +112,15 @@ for p = 1:12                                                % for each of 12 par
 end
 
 
-%% SAVE DATA TO LOCAL DIRECTORY_____________________________
-save('HandLab_P10_E14_data.txt', 'data', '-ascii');                         % save main data file
-save('HandLab_P10_E14_meta.txt', 'meta', '-ascii');                         % save meta data file
+%% SAVE DATA TO LOCAL DIRECTORY_____________________________________________
+writematrix(data, 'HandLab_P10_E14_data.csv');                              % save main data file (~400MB)
 
 
-%% CREATE METADATA TABLE WITH HEADERS_______________________
+%% NEED TO SAVE ALL THIS IN BIDS-COMPATIBLE DIRECTORIES_____________________
+
+
+
+%% CREATE METADATA TABLE WITH HEADERS_______________________________________
 reps = meta(:,2);
 muscles = ms(meta(:,3));
 sites = poss(meta(:,4));
@@ -126,9 +129,9 @@ conditions = cs(meta(:,6));
 participants = meta(:,7);
 metadata = table(meta(:,1), reps, muscles', sites', intensities, conditions', participants, meta(:,8), meta(:,9), meta(:,10), meta(:,11), meta(:,12), meta(:,13), meta(:,14), meta(:,15), meta(:,16));
 metadata.Properties.VariableNames = {'Dataset', 'Repetition', 'Muscle', 'TMS Site', 'TMS intensity', 'Condition', 'Participant', 'MEP min amp', 'MEP min lat', 'MEP max amp', 'MEP max lat', 'MEP P2P', 'RMS EMG', 'Latency: Human1', 'Latency: Human2', 'Latency: Bigoni'};
-writetable(metadata, 'HandLab_P10_E14_meta.csv', 'FileType', 'text');
+writetable(metadata, 'HandLab_P10_E14_meta_headers.csv', 'FileType', 'text');
 
-%% CREATE PARTICIPANTS TABLE WITH HEADERS___________________
+%% CREATE PARTICIPANTS TABLE WITH HEADERS___________________________________
 sex = {'M','F'};
 sex = sex(fem+1);
 handed = {'L', 'A', 'R'};
@@ -136,3 +139,10 @@ handed = handed(han+1);
 participants = table(hs', age', sex', handed', hed(:,1), hed(:,2), rmt', amt', m1(:,1), m1(:,2), smg(:,1), smg(:,2));
 participants.Properties.VariableNames = {'ID', 'Age', 'Sex', 'Handedness', 'Nasion-Inion', 'Inter-tragus', 'RMT', 'AMT', 'Site1 lateral', 'Site1 anterior', 'Site2 lateral', 'Site2 anterior'};
 writetable(participants, 'HandLab_P10_E14_subjects.csv', 'FileType', 'text');
+
+% then do the same for:
+% P10_E8    https://osf.io/2xytm/files/ejr4z    2b
+% P10_E9    https://osf.io/2xytm/files/ved9x    3
+% P10_E10   https://osf.io/2xytm/files/rhkde    4
+% P10_E11   https://osf.io/2xytm/files/kuf32    5
+% P10_E12   https://osf.io/2xytm/files/6wq2c    6
