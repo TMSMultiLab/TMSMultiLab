@@ -152,7 +152,7 @@ function [onset, stats, options] = MEP_onset_Boyles_2026(data, samplehz, tmstime
     [grandamp, grandlat] = max(abs(grandmean(start:finish)));             % max overall peak in grandmean data
     
     % in the baseline_____________________________________________________
-    base.p2p = max(data(base.on:base.off));                                % the maximum peak-to-peak in the baseline
+    base.p2p = max(data(base.on:base.off)) - min(data(base.on:base.off));  % the peak-to-peak in the baseline
     base.derivmean = mean(abs(diff(data(base.on:base.off))));              % baseline mean derivative
     base.derivSD = std(abs(diff(data(base.on:base.off))));                 % baseline SD derivative
     base.derivcutoff = base.derivmean + options.basederivSDs.*base.derivSD;% cutoff for baseline derivatives
