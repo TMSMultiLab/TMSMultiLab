@@ -12,6 +12,12 @@
 %    options.climit = 10;                                              % limit in number of SDs from the mean - signal needs to pass this level before detection
 %    options.mshift = 3.09;                                            % this number of SDs is subtracted from each sample before adding to the cumulative sum - gate the small fluctuations
 %    options.plot = false;                                             % don't plot data by default
+%
+% Version 1.0, 19th August 2026, written by Nick Holmes @TheHandLab
+% cumulative sum is a well-used method in engineering to detect drift or deviation away from the mean in a signal.
+% In neurophysiology, it has been used for at least 50 years, for example by: Ellaway et al. (1978)
+% Ellaway PH (1978) Cumulative sum technique and its application to the analysis of peristimulus time histograms.
+% Electroencephalography and Clinical Neurophysiology, 45(2):302-304 https://doi.org/10.1016/0013-4694(78)90017-2
 
 function [onset, stats, options] = MEP_onset_cusum(data, samplehz, tmstime, options)
 
