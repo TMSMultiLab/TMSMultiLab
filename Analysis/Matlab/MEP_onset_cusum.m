@@ -15,7 +15,7 @@
 %
 % Version 1.0, 19th August 2026, written by Nick Holmes @TheHandLab
 % cumulative sum is a well-used method in engineering to detect drift or deviation away from the mean in a signal.
-% In neurophysiology, it has been used for at least 50 years, for example by: Ellaway et al. (1978)
+% In neurophysiology, it has been used for at least 50 years, for example by: Ellaway (1978):
 % Ellaway PH (1978) Cumulative sum technique and its application to the analysis of peristimulus time histograms.
 % Electroencephalography and Clinical Neurophysiology, 45(2):302-304 https://doi.org/10.1016/0013-4694(78)90017-2
 
@@ -113,32 +113,32 @@ function [onset, stats, options] = MEP_onset_cusum(data, samplehz, tmstime, opti
         xrange = -tmstime : (1000./samplehz) : (samples-1)./(samplehz./1000) - tmstime;% the x-axis time labels
         plot([xrange(1),xrange(end)], [0,0], 'k-');                       % baseline mean
         plot(xrange, data, 'b-');                                         % plot the data
-	a = axis;
-	plot([-options.baseline(1),-options.baseline(1)], [a(3),a(4)], 'k--');% baseline start
-	plot([-options.baseline(2),-options.baseline(2)], [a(3),a(4)], 'k--');% baseline end
-	plot([options.searchwindow(1),options.searchwindow(1)], [a(3),a(4)], 'r--');% search window start
-	plot([options.searchwindow(2),options.searchwindow(2)], [a(3),a(4)], 'r--');% search window end
-	if ~isempty(onset)
-	    plot([onset,onset], [a(3),a(4)], 'b-');                       % onset detected?
-	end
-        ylabel('EMG amplitude, mV');
-	axis([-options.baseline(1).*1.05,100,a(3),a(4)]);                 % reset axis
-	    
-	subplot(2,1,2);                                                   % bottom = the diagnostics
-	hold on;
-	xrange = options.searchwindow(1) : (1000./samplehz) : options.searchwindow(2);% the x-axis time labels
-	plot([a(1),a(2)], [base.mean+(options.climit.*base.SD), base.mean+(options.climit.*base.SD)],'k--');% upper detection limit
-        plot([a(1),a(2)], [base.mean-(options.climit.*base.SD), base.mean-(options.climit.*base.SD)],'k--');% lower detection limit
-	plot(xrange,stats.uppersum, 'b-');                                % the upper cumulative sum
-	plot(xrange,stats.lowersum, 'r-');                                % the upper cumulative sum
-	a = axis;
-	if ~isempty(stats.upper)
-	    plot([stats.upper,stats.upper], [0,a(4)], 'b-');              % upper onset detected
-	end
-	if ~isempty(stats.lower)
-	    plot([stats.lower,stats.lower], [0,a(3)], 'r-');              % lower onset detected
+        a = axis;
+        plot([-options.baseline(1),-options.baseline(1)], [a(3),a(4)], 'k--');% baseline start
+        plot([-options.baseline(2),-options.baseline(2)], [a(3),a(4)], 'k--');% baseline end
+        plot([options.searchwindow(1),options.searchwindow(1)], [a(3),a(4)], 'r--');% search window start
+        plot([options.searchwindow(2),options.searchwindow(2)], [a(3),a(4)], 'r--');% search window end
+        if ~isempty(onset)
+            plot([onset,onset], [a(3),a(4)], 'b-');                       % onset detected?
         end
-	axis([-options.baseline(1).*1.05,100,a(3),a(4)]);                 % reset axis
+        ylabel('EMG amplitude, mV');
+        axis([-options.baseline(1).*1.05,100,a(3),a(4)]);                 % reset axis
+            
+        subplot(2,1,2);                                                   % bottom = the diagnostics
+        hold on;
+        xrange = options.searchwindow(1) : (1000./samplehz) : options.searchwindow(2);% the x-axis time labels
+        plot([a(1),a(2)], [base.mean+(options.climit.*base.SD), base.mean+(options.climit.*base.SD)],'k--');% upper detection limit
+        plot([a(1),a(2)], [base.mean-(options.climit.*base.SD), base.mean-(options.climit.*base.SD)],'k--');% lower detection limit
+        plot(xrange,stats.uppersum, 'b-');                                % the upper cumulative sum
+        plot(xrange,stats.lowersum, 'r-');                                % the upper cumulative sum
+        a = axis;
+        if ~isempty(stats.upper)
+            plot([stats.upper,stats.upper], [0,a(4)], 'b-');              % upper onset detected
+        end
+        if ~isempty(stats.lower)
+            plot([stats.lower,stats.lower], [0,a(3)], 'r-');              % lower onset detected
+        end
+        axis([-options.baseline(1).*1.05,100,a(3),a(4)]);                 % reset axis
         xlabel('Time after TMS, ms');
         ylabel('Cumulative sum, mV');
     end
