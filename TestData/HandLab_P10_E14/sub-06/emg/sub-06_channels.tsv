@@ -1,7 +1,0 @@
-name	type	units	signal_electrode	reference	group	target_muscle	description
-time	LATENCY	s	n/a	n/a	n/a	n/a	time to TMS
-FDI-R	EMG	mV	FDI-R	bipolar	amp1	right FDI	target muscle
-ADM-R	EMG	mV	ADM-R	bipolar	amp1	right ADM	nontarget muscle
-FDS-R	EMG	mV	FDS-R	bipolar	amp2	right FDS	nontarget muscle
-EDC-R	EMG	mV	EDC-R	bipolar	amp2	right EDC	nontarget muscle
-trigger	TRIG	V	n/a	n/a	n/a	n/a	TMS 5V TLL
