@@ -1,0 +1,40 @@
+{
+  "age":
+  {  "Description": "age of the participant",
+     "Units": "year"
+  },
+  "sex": "self-reported sex at birth of the participant, F = female, M = male, O = other",
+  "handedness": "self-reported handedness (e.g., writing hand) of the participant",
+  "ear2ear" :
+  {  "Description": "distance between the tragus-helix intersection of the two ears, passing through the vertex",
+     "Units": "cm"
+  },
+  "nas2in" :
+  {  "Description": "distance between the nasion and inion, passing through the vertex",
+     "Units": "cm"
+  },
+  "rmt" :
+  {  "Description": "resting motor threshold for the FDI muscle, using the 5/10 relative frequency method, MEP peak-to-peak within 10-50ms >0.05mV",
+     "Units": "%MSO"
+  },
+  "amt" :
+  {  "Description": "active motor threshold for the FDI muscle during finger movement (pegboard task), using the mean average of 5 potentials, with peak-to-peak amplitude within 10-50ms > ~ 0.1mV",
+     "Units": "%MSO"
+  },
+  "m1lat" :
+  {  "Description": "distance between the vertex and the M1-FDI site, measured laterally, left = negative, right = positive",
+     "Units": "cm"
+  },
+  "m1ant" :
+  {  "Description": "distance between the vertex and the M1-FDI site, measured anteriorly, posterior = negative, anterior = positive",
+     "Units": "cm"
+  },
+  "smglat" :
+  {  "Description": "distance between the vertex and the SMG site, measured laterally, left = negative, right = positive",
+     "Units": "cm"
+  },
+  "smgant" :
+  {  "Description": "distance between the vertex and the SMG site, measured anteriorly, posterior = negative, anterior = positive",
+     "Units": "cm"
+  }
+}

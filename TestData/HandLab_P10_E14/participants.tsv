@@ -1,0 +1,13 @@
+participant_id	species	age	sex	handedness	ear2ear	nas2in	rmt	amt	m1lat	m1ant	smglat	smgant
+sub-01	homo sapiens	46	M	R	38	36.5	55	30	-5.5	1.5	-9	-2
+sub-02	homo sapiens	21	M	L	36	34	45	30	-5.5	0.5	-9	-3
+sub-03	homo sapiens	21	M	R	38	38	52	33	-5	0.5	-8.5	-3
+sub-04	homo sapiens	40	F	R	36	34	49	28	-5	1	-8.5	-2.5
+sub-05	homo sapiens	33	M	R	40	39.5	48	34	-5	1	-8.5	-2.5
+sub-06	homo sapiens	48	F	R	38	36	40	21	-5.5	0	-9	-3.5
+sub-07	homo sapiens	25	F	R	36	39	70	38	-6	1	-9.5	-2.5
+sub-08	homo sapiens	30	F	R	36	38	NaN	75	-5	2	NaN	NaN
+sub-09	homo sapiens	20	M	R	42	40	63	36	-5	1	-8.5	-2.5
+sub-10	homo sapiens	20	F	R	38	39	46	30	-5	0.5	-8.5	-3
+sub-11	homo sapiens	24	M	R	38	39	46	23	-5	1	-8.5	-2.5
+sub-12	homo sapiens	25	M	R	37	36	54	38	-5	1	-8.5	-2.5

@@ -6,7 +6,7 @@ The dataset will be used to test TMS, EMG, and MEP analysis code.
 
 ## Guidance
 
-We don't want to store the data itself. We want to provide scripts that will allow users to download the data (semi-automatically), and recreate the full test dataset on their local machine.
+We don't want to store a single massive data file. We want to provide scripts that will allow users to flexibly recreate bespoke test datasets from the existing source data.
 
 One script per dataset.
 
