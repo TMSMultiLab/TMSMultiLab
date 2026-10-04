@@ -60,5 +60,6 @@ If you're planning to make major changes to the code, or to contribute new mater
         * <code>Tokens (classic)</code> ->
         * for the <code>scope</code> choose at least the <code>repo</code> settings, then generate.
         * It will give you a long passcode - copy and paste as the 'password' when requested
+     * alternative (easier on Windows): install [GitHub CLI](https://cli.github.com/), run <code>gh auth login</code> and choose <code>HTTPS</code> + <code>Login with a web browser</code>. After that, <code>git push</code> works without a username or token.
 6. Keep pulling and pushing regularly..!
 7. When you're ready to share the developments from your repository into the main TMSMultiLab repository,  you'll need to do a <code>Pull request</code>
